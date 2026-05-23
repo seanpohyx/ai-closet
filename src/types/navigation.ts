@@ -6,14 +6,14 @@ export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   ClothingDetailModal: { id: string };
   OutfitDetailModal: { id: string };
-  SelectOutfitModal: undefined;
+  SelectClothingModal: { onSelect: (uri: string) => void };
+  SelectOutfitModal: { onSelect: (uri: string) => void };
 };
 
 export type MainTabParamList = {
   Closet: NavigatorScreenParams<ClosetStackParamList>;
   Outfits: NavigatorScreenParams<OutfitStackParamList>;
   TryOn: NavigatorScreenParams<TryOnStackParamList>;
-  Profile: undefined;
 };
 
 export type ClosetStackParamList = {

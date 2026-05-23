@@ -10,6 +10,8 @@ import OutfitManagementScreen from "../screens/OutfitManagementScreen";
 import OutfitCanvasScreen from "../screens/OutfitCanvasScreen";
 import OutfitDetailScreen from "../screens/OutfitDetailScreen";
 import VirtualTryOnScreen from "../screens/VirtualTryOnScreen";
+import SelectClothingScreen from "../screens/SelectClothingScreen";
+import SelectOutfitScreen from "../screens/SelectOutfitScreen";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
 import {
@@ -25,8 +27,6 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const ClosetStack = createNativeStackNavigator<ClosetStackParamList>();
 const OutfitStack = createNativeStackNavigator<OutfitStackParamList>();
 const TryOnStack = createNativeStackNavigator<TryOnStackParamList>();
-
-const ProfileScreen = () => <></>;
 
 // Stack Navigators
 const ClosetStackNavigator = () => (
@@ -84,13 +84,6 @@ const MainTabNavigator = () => (
         tabBarIcon: ({ color, size }) => <FontAwesome6 name="wand-magic-sparkles" size={20} color={color} />,
       }}
     />
-    <Tab.Screen
-      name="Profile"
-      component={ProfileScreen}
-      options={{
-        tabBarIcon: ({ color, size }) => <MaterialIcons name="person" size={size} color={color} />,
-      }}
-    />
   </Tab.Navigator>
 );
 
@@ -103,6 +96,8 @@ const AppNavigator = () => {
         <RootStack.Group screenOptions={{ presentation: "modal" }}>
           <RootStack.Screen name="ClothingDetailModal" component={ClothingDetailScreen} />
           <RootStack.Screen name="OutfitDetailModal" component={OutfitDetailScreen} />
+          <RootStack.Screen name="SelectClothingModal" component={SelectClothingScreen} />
+          <RootStack.Screen name="SelectOutfitModal" component={SelectOutfitScreen} />
         </RootStack.Group>
       </RootStack.Navigator>
     </NavigationContainer>

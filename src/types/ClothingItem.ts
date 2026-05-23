@@ -43,6 +43,6 @@ export const createNewClothingItem = (imageUri: string): ClothingItem => ({
   price: 0,
   processingStatus: {
     backgroundRemoval: "pending",
-    categorization: "pending",
+    categorization: "completed",
   },
 });

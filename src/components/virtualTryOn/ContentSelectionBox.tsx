@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "../../styles/colors";
 import { typography } from "../../styles/globalStyles";
@@ -10,9 +10,10 @@ type Props = {
   iconName: keyof typeof MaterialIcons.glyphMap;
   onPress: () => void;
   selectedImageUri?: string;
+  onClear?: () => void;
 };
 
-const ContentSelectionBox = ({ title, iconName, onPress, selectedImageUri }: Props) => (
+const ContentSelectionBox = ({ title, iconName, onPress, selectedImageUri, onClear }: Props) => (
   <View style={styles.container}>
     <Text style={styles.title}>{title}</Text>
     <PressableFade onPress={onPress} style={styles.selectionArea}>
@@ -27,6 +28,15 @@ const ContentSelectionBox = ({ title, iconName, onPress, selectedImageUri }: Pro
         </>
       )}
     </PressableFade>
+    {selectedImageUri && onClear && (
+      <Pressable
+        style={styles.clearButton}
+        onPress={onClear}
+        hitSlop={8}
+      >
+        <MaterialIcons name="close" size={18} color={colors.screen_background} />
+      </Pressable>
+    )}
   </View>
 );
 
@@ -66,6 +76,17 @@ const styles = StyleSheet.create({
   selectedImage: {
     width: "100%",
     height: "100%",
+  },
+  clearButton: {
+    position: "absolute",
+    top: 36,
+    right: 6,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

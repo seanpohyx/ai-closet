@@ -31,7 +31,6 @@ const tryOnOptions: TryOnOption[] = [
     title: "Complete Outfits",
     description: "Try on your saved outfit with multiple pieces",
     icon: "style",
-    isComingSoon: true,
   },
 ];
 

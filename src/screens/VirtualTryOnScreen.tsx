@@ -85,6 +85,20 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
           setSelectedOutfitUri(uri);
           setResultImageUri(undefined);
         }
+      } else if (optionId === "single") {
+        navigation.navigate("SelectClothingModal", {
+          onSelect: (uri: string) => {
+            setSelectedOutfitUri(uri);
+            setResultImageUri(undefined);
+          },
+        });
+      } else if (optionId === "outfit") {
+        navigation.navigate("SelectOutfitModal", {
+          onSelect: (uri: string) => {
+            setSelectedOutfitUri(uri);
+            setResultImageUri(undefined);
+          },
+        });
       }
     }, 300);
   };
@@ -228,12 +242,20 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
             iconName="checkroom"
             onPress={() => setOptionSheetVisible(true)}
             selectedImageUri={selectedOutfitUri}
+            onClear={() => {
+              setSelectedOutfitUri(undefined);
+              setResultImageUri(undefined);
+            }}
           />
           <ContentSelectionBox
             title="Add Your Picture"
             iconName="add-a-photo"
             onPress={handlePhotoSelect}
             selectedImageUri={selectedPhotoUri}
+            onClear={() => {
+              setSelectedPhotoUri(undefined);
+              setResultImageUri(undefined);
+            }}
           />
         </View>
 
