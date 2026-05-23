@@ -13,6 +13,7 @@ export interface ClothingItem {
   brand: string;
   purchaseDate: string;
   price: number;
+  isUnique?: boolean;
 
   // processing status fields
   processingStatus: {

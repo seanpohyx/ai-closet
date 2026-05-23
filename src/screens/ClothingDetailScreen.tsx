@@ -13,7 +13,7 @@ import {
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { ClothingContext } from "../contexts/ClothingContext";
 import { ClosetStackScreenProps, RootStackScreenProps } from "../types/navigation";
 import { ClothingItem } from "../types/ClothingItem";
@@ -23,10 +23,10 @@ import TagChips from "../components/common/TagChips";
 import Header from "../components/common/Header";
 import CategoryPicker from "../components/common/CategoryPicker";
 import MultiSelectToggle from "../components/common/MultiSelectToggle";
+import ColorMultiSelect from "../components/common/ColorMultiSelect";
 import YearMonthPicker from "../components/common/YearMonthPicker";
 import RelevantOutfits from "../components/clothing/RelevantOutfits";
-import { colors as colorOptions, seasons, occasions } from "../data/options";
-import { brands as brandSuggestions } from "../data/suggestions";
+import { occasions, colors as colorOptions } from "../data/options";
 import { typography } from "../styles/globalStyles";
 
 // Style Constants
@@ -222,7 +222,7 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
     if (localItem) {
       updateClothingItem(localItem);
       setIsDirty(false);
-      Alert.alert("Success", "Clothing item updated successfully");
+      navigation.goBack();
     }
   };
 
@@ -317,28 +317,50 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
               />
             </View>
 
-            {/* Color */}
-            <DetailField
-              label="Color"
-              value={localItem.color.join(", ")}
-              onChangeText={(text) =>
-                handleFieldChange(
-                  "color",
-                  text.split(",").map((s) => s.trim())
-                )
-              }
-              placeholder="Enter color(s)"
-              disabled={isProcessing}
-            />
+            {/* Unique Pattern */}
+            <View style={styles.detailRow}>
+              <View style={styles.labelColumn}>
+                <Text style={styles.detailLabel}>Unique Pattern</Text>
+                <Text style={styles.detailHint}>Can't be determined by color</Text>
+              </View>
+              <Pressable
+                style={styles.uniqueCheckbox}
+                onPress={() => {
+                  if (isProcessing) return;
+                  const newIsUnique = !localItem.isUnique;
+                  handleFieldChange("isUnique", newIsUnique);
+                  if (newIsUnique) {
+                    handleFieldChange("color", []);
+                  }
+                }}
+                disabled={isProcessing}
+              >
+                <View style={[styles.checkbox, localItem.isUnique && styles.checkboxChecked]}>
+                  {localItem.isUnique && (
+                    <MaterialIcons name="check" size={18} color={colors.screen_background} />
+                  )}
+                </View>
+              </Pressable>
+            </View>
 
-            {/* Season */}
-            <MultiSelectField
-              label="Season"
-              selectedValues={localItem.season}
-              options={seasons}
-              onValueChange={(selectedSeasons) => handleFieldChange("season", selectedSeasons)}
-              disabled={isProcessing}
-            />
+            {/* Color (hidden when item is marked unique) */}
+            {!localItem.isUnique && (
+              <View style={styles.detailRow}>
+                <View style={styles.labelColumn}>
+                  <Text style={styles.detailLabel}>Color</Text>
+                  <Text style={styles.detailHint}>Pick up to 2</Text>
+                </View>
+                <View style={styles.multiSelectContainer}>
+                  <ColorMultiSelect
+                    options={colorOptions}
+                    selectedValues={localItem.color}
+                    onValueChange={(selectedColors) => handleFieldChange("color", selectedColors)}
+                    disabled={isProcessing}
+                    maxSelections={2}
+                  />
+                </View>
+              </View>
+            )}
 
             {/* Occasion */}
             <MultiSelectField
@@ -346,15 +368,6 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
               selectedValues={localItem.occasion}
               options={occasions}
               onValueChange={(selectedOccasions) => handleFieldChange("occasion", selectedOccasions)}
-              disabled={isProcessing}
-            />
-
-            {/* Brand */}
-            <DetailField
-              label="Brand"
-              value={localItem.brand}
-              onChangeText={(text) => handleFieldChange("brand", text)}
-              placeholder="Enter brand"
               disabled={isProcessing}
             />
 
@@ -423,6 +436,15 @@ const styles = StyleSheet.create({
     color: colors.text_primary,
     flex: FLEX.LABEL,
   },
+  labelColumn: {
+    flex: FLEX.LABEL,
+  },
+  detailHint: {
+    fontSize: 12,
+    fontFamily: typography.regular,
+    color: colors.text_gray,
+    marginTop: 2,
+  },
   valueContainer: {
     flex: FLEX.VALUE,
     flexDirection: "row",
@@ -453,6 +475,24 @@ const styles = StyleSheet.create({
   multiSelectContainer: {
     flex: FLEX.VALUE,
     alignItems: "flex-end",
+  },
+  uniqueCheckbox: {
+    flex: FLEX.VALUE,
+    alignItems: "flex-end",
+    paddingRight: SPACING.HORIZONTAL,
+  },
+  checkbox: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: colors.border_gray,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkboxChecked: {
+    backgroundColor: colors.primary_yellow,
+    borderColor: colors.primary_yellow,
   },
   saveButton: {
     position: "absolute",

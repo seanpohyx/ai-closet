@@ -15,4 +15,4 @@ export const colors = [
 
 export const seasons = ["Spring/Fall", "Summer", "Winter"];
 
-export const occasions = ["Casual", "Work", "Sports", "Formal", "Party"];
+export const occasions = ["Casual", "Work", "Sports", "Formal", "Party", "Travel"];
