@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, ScrollView, Pressable, Alert } from "
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import { ClothingContext } from "../contexts/ClothingContext";
 import { ClothingItem } from "../types/ClothingItem";
 import { ClosetStackScreenProps } from "../types/navigation";
@@ -114,8 +115,12 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
 
   const handleAddClothingItem = async (imageUri: string) => {
     try {
-      // Add the item immediately and get its ID
-      const newItemId = await addClothingItemFromImage(imageUri);
+      // Normalize to JPEG so all APIs receive a supported format
+      const manipResult = await ImageManipulator.manipulateAsync(imageUri, [], {
+        compress: 0.9,
+        format: ImageManipulator.SaveFormat.JPEG,
+      });
+      const newItemId = await addClothingItemFromImage(manipResult.uri);
 
       // Navigate to the detail screen right away
       navigation.navigate("ClothingDetail", { id: newItemId });
