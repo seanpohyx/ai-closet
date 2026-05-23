@@ -5,6 +5,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { ClothingContext } from "../contexts/ClothingContext";
+import { CarouselContext } from "../contexts/CarouselContext";
+import UploadTipsCard from "../components/common/UploadTipsCard";
 import { ClothingItem } from "../types/ClothingItem";
 import { ClosetStackScreenProps } from "../types/navigation";
 import ClothingItemThumbnail from "../components/clothing/ClothingItemThumbnail";
@@ -36,10 +38,13 @@ const CategoryTab = ({ name, isSelected, onPress, count }: CategoryTabProps) => 
 // Main Component
 const ClothingManagementScreen = ({ navigation }: Props) => {
   const context = useContext(ClothingContext);
+  const carouselCtx = useContext(CarouselContext);
 
   // Selection state
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [tipsVisible, setTipsVisible] = useState(false);
+  const [pendingPickType, setPendingPickType] = useState<"camera" | "gallery" | null>(null);
 
   if (!context) {
     return <Text>Loading...</Text>;
@@ -122,45 +127,63 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
       });
       const newItemId = await addClothingItemFromImage(manipResult.uri);
 
-      // Navigate to the detail screen right away
-      navigation.navigate("ClothingDetail", { id: newItemId });
+      // Navigate to the detail screen right away; signal that alignment should
+      // auto-launch once BG removal completes.
+      navigation.navigate("ClothingDetail", { id: newItemId, autoLaunchAlignment: true });
     } catch (error) {
       console.error("Error adding clothing item:", error);
       Alert.alert("Error", "Failed to add clothing item. Please try again.");
     }
   };
 
-  const handleChoosePhoto = async () => {
+  const launchGallery = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
       Alert.alert("Permission Required", "Permission to access gallery is required!");
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
     });
-
     if (!result.canceled) {
       handleAddClothingItem(result.assets[0].uri);
     }
   };
 
-  const handleTakePhoto = async () => {
+  const launchCamera = async () => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (!permissionResult.granted) {
       Alert.alert("Permission Required", "Permission to access camera is required!");
       return;
     }
-
-    const result = await ImagePicker.launchCameraAsync({
-      quality: 1,
-    });
-
+    const result = await ImagePicker.launchCameraAsync({ quality: 1 });
     if (!result.canceled) {
       handleAddClothingItem(result.assets[0].uri);
     }
+  };
+
+  const showTipsOrPick = (type: "camera" | "gallery") => {
+    if (carouselCtx && !carouselCtx.hasSeenUploadTips) {
+      setPendingPickType(type);
+      setTipsVisible(true);
+    } else if (type === "camera") {
+      launchCamera();
+    } else {
+      launchGallery();
+    }
+  };
+
+  const handleChoosePhoto = () => showTipsOrPick("gallery");
+  const handleTakePhoto = () => showTipsOrPick("camera");
+
+  const handleTipsContinue = () => {
+    carouselCtx?.setHasSeenUploadTips(true);
+    setTipsVisible(false);
+    const type = pendingPickType;
+    setPendingPickType(null);
+    if (type === "camera") launchCamera();
+    else if (type === "gallery") launchGallery();
   };
 
   const handleTagPress = (tag: string) => {
@@ -237,6 +260,15 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
       ) : (
         <AnimatedAddButton onChoosePhoto={handleChoosePhoto} onTakePhoto={handleTakePhoto} />
       )}
+
+      <UploadTipsCard
+        visible={tipsVisible}
+        onContinue={handleTipsContinue}
+        onDismiss={() => {
+          setTipsVisible(false);
+          setPendingPickType(null);
+        }}
+      />
     </SafeAreaView>
   );
 };

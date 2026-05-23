@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Alert } from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import ViewShot, { CaptureOptions } from "react-native-view-shot";
+import * as FileSystem from "expo-file-system/legacy";
 import { OutfitStackScreenProps } from "../types/navigation";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
@@ -101,26 +102,29 @@ const OutfitCanvasScreen = ({ navigation, route }: Props) => {
     }
 
     try {
-      // Set capturing state to true to remove background
       setIsCapturing(true);
-      // Deselect all items before capture
       canvasRef.current?.deselectAll();
-
-      // Wait a frame to ensure background is removed
       await new Promise((resolve) => requestAnimationFrame(resolve));
 
-      const uri = await viewShotRef.current.capture({
+      // Capture to a temp file and copy into persistent document storage.
+      // Avoids bloating AsyncStorage with massive base64 strings.
+      const tmpUri = await viewShotRef.current.capture({
         format: "png",
         quality: 1,
-        result: "base64",
+        result: "tmpfile",
       });
 
-      return uri;
+      if (!tmpUri) {
+        throw new Error("Capture returned an empty URI");
+      }
+
+      const destUri = `${FileSystem.documentDirectory}outfit-${Date.now()}.png`;
+      await FileSystem.copyAsync({ from: tmpUri, to: destUri });
+      return destUri;
     } catch (error) {
       console.error("Error capturing canvas:", error);
       throw error;
     } finally {
-      // Reset capturing state
       setIsCapturing(false);
     }
   };
@@ -134,6 +138,9 @@ const OutfitCanvasScreen = ({ navigation, route }: Props) => {
     try {
       setIsSaving(true);
       const outfitImageUri = await captureCanvas();
+      if (!outfitImageUri) {
+        throw new Error("Captured outfit image URI is empty");
+      }
 
       let outfit: Outfit;
       const now = new Date().toISOString();

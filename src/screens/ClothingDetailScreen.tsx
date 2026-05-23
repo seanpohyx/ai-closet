@@ -135,8 +135,9 @@ const MultiSelectField = ({
 );
 
 const ClothingDetailScreen = ({ route, navigation }: Props) => {
-  const { id } = route.params;
+  const { id, autoLaunchAlignment } = route.params;
   const context = useContext(ClothingContext);
+  const hasAutoLaunchedRef = useRef(false);
 
   // Determine if we're in modal mode by checking the route name
   const isModal = route.name === "ClothingDetailModal";
@@ -195,6 +196,20 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
       setLocalItem(contextItem);
     }
   }, [contextItem]);
+
+  // Auto-launch alignment after BG removal completes for newly added items.
+  useEffect(() => {
+    if (!autoLaunchAlignment || hasAutoLaunchedRef.current || !contextItem) return;
+    const bgDone = contextItem.processingStatus.backgroundRemoval === "completed";
+    const isLayeredCategory = ["Tops", "Bottoms", "Dresses"].includes(contextItem.category);
+    const notYetAligned = !contextItem.carouselTransform;
+    if (bgDone && isLayeredCategory && notYetAligned && contextItem.backgroundRemovedImageUri) {
+      hasAutoLaunchedRef.current = true;
+      navigation
+        .getParent<NativeStackNavigationProp<RootStackParamList>>()
+        ?.navigate("AlignToSilhouetteModal", { mode: "garment", clothingItemId: id });
+    }
+  }, [contextItem, autoLaunchAlignment, id, navigation]);
 
   if (!localItem) {
     return (
@@ -317,10 +332,10 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
               />
             </View>
 
-            {/* Unique Pattern */}
+            {/* Prints */}
             <View style={styles.detailRow}>
               <View style={styles.labelColumn}>
-                <Text style={styles.detailLabel}>Unique Pattern</Text>
+                <Text style={styles.detailLabel}>Prints</Text>
                 <Text style={styles.detailHint}>Can't be determined by color</Text>
               </View>
               <Pressable
@@ -394,6 +409,36 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
               disabled={isProcessing}
             />
           </View>
+
+          {/* Carousel section — only for layered categories */}
+          {["Tops", "Bottoms", "Dresses"].includes(localItem.category) && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Carousel</Text>
+
+              <Pressable
+                style={styles.actionRow}
+                onPress={() =>
+                  navigation
+                    .getParent<NativeStackNavigationProp<RootStackParamList>>()
+                    ?.navigate("AlignToSilhouetteModal", { mode: "garment", clothingItemId: id })
+                }
+                disabled={isProcessing || !localItem.backgroundRemovedImageUri}
+              >
+                <View style={styles.actionRowLeft}>
+                  <MaterialCommunityIcons name="human" size={22} color={colors.icon_stroke} />
+                  <View style={styles.actionTextCol}>
+                    <Text style={styles.actionTitle}>Align to Silhouette</Text>
+                    <Text style={styles.actionHint}>
+                      {localItem.carouselTransform
+                        ? "Aligned — looks good in the carousel"
+                        : "Not aligned yet — needed for accurate carousel fit"}
+                    </Text>
+                  </View>
+                </View>
+                <MaterialCommunityIcons name="chevron-right" size={28} color={colors.text_gray} />
+              </Pressable>
+            </View>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -493,6 +538,32 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: colors.primary_yellow,
     borderColor: colors.primary_yellow,
+  },
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: SPACING.VERTICAL,
+    paddingHorizontal: SPACING.HORIZONTAL,
+  },
+  actionRowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  actionTextCol: {
+    marginLeft: 12,
+  },
+  actionTitle: {
+    fontFamily: typography.medium,
+    fontSize: FONT_SIZE.REGULAR,
+    color: colors.text_primary,
+  },
+  actionHint: {
+    fontFamily: typography.regular,
+    fontSize: 12,
+    color: colors.text_gray,
+    marginTop: 2,
   },
   saveButton: {
     position: "absolute",

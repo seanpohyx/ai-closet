@@ -12,6 +12,9 @@ import OutfitDetailScreen from "../screens/OutfitDetailScreen";
 import VirtualTryOnScreen from "../screens/VirtualTryOnScreen";
 import SelectClothingScreen from "../screens/SelectClothingScreen";
 import SelectOutfitScreen from "../screens/SelectOutfitScreen";
+import CarouselScreen from "../screens/CarouselScreen";
+import CarouselSetupScreen from "../screens/CarouselSetupScreen";
+import AlignToSilhouetteScreen from "../screens/AlignToSilhouetteScreen";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
 import {
@@ -20,6 +23,7 @@ import {
   ClosetStackParamList,
   OutfitStackParamList,
   TryOnStackParamList,
+  CarouselStackParamList,
 } from "../types/navigation";
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -27,6 +31,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const ClosetStack = createNativeStackNavigator<ClosetStackParamList>();
 const OutfitStack = createNativeStackNavigator<OutfitStackParamList>();
 const TryOnStack = createNativeStackNavigator<TryOnStackParamList>();
+const CarouselStack = createNativeStackNavigator<CarouselStackParamList>();
 
 // Stack Navigators
 const ClosetStackNavigator = () => (
@@ -48,6 +53,13 @@ const TryOnStackNavigator = () => (
   <TryOnStack.Navigator screenOptions={{ headerShown: false }}>
     <TryOnStack.Screen name="VirtualTryOn" component={VirtualTryOnScreen} />
   </TryOnStack.Navigator>
+);
+
+const CarouselStackNavigator = () => (
+  <CarouselStack.Navigator screenOptions={{ headerShown: false }}>
+    <CarouselStack.Screen name="CarouselHome" component={CarouselScreen} />
+    <CarouselStack.Screen name="CarouselSetup" component={CarouselSetupScreen} />
+  </CarouselStack.Navigator>
 );
 
 // Main Tab Navigator
@@ -84,6 +96,13 @@ const MainTabNavigator = () => (
         tabBarIcon: ({ color, size }) => <FontAwesome6 name="wand-magic-sparkles" size={20} color={color} />,
       }}
     />
+    <Tab.Screen
+      name="Carousel"
+      component={CarouselStackNavigator}
+      options={{
+        tabBarIcon: ({ color, size }) => <MaterialIcons name="view-carousel" size={size} color={color} />,
+      }}
+    />
   </Tab.Navigator>
 );
 
@@ -98,6 +117,7 @@ const AppNavigator = () => {
           <RootStack.Screen name="OutfitDetailModal" component={OutfitDetailScreen} />
           <RootStack.Screen name="SelectClothingModal" component={SelectClothingScreen} />
           <RootStack.Screen name="SelectOutfitModal" component={SelectOutfitScreen} />
+          <RootStack.Screen name="AlignToSilhouetteModal" component={AlignToSilhouetteScreen} />
         </RootStack.Group>
       </RootStack.Navigator>
     </NavigationContainer>

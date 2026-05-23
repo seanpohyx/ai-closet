@@ -1,8 +1,9 @@
 import React from "react";
-import { Image, StyleSheet, View, ViewStyle } from "react-native";
+import { Image, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Outfit } from "../../types/Outfit";
 import { colors } from "../../styles/colors";
+import { typography } from "../../styles/globalStyles";
 import PressableFade from "../common/PressableFade";
 
 type Props = {
@@ -25,7 +26,15 @@ const OutfitThumbnail = ({ outfit, width, height, onPress, onLongPress, isSelect
   return (
     <PressableFade style={[style]} onPress={onPress} onLongPress={onLongPress}>
       <View style={[styles.card, thumbnailStyle, isSelected && styles.cardSelected]}>
-        <Image source={{ uri: outfit.imageUri }} style={styles.image} resizeMode="cover" />
+        {outfit.imageUri ? (
+          <Image source={{ uri: outfit.imageUri }} style={styles.image} resizeMode="cover" />
+        ) : (
+          <View style={styles.brokenBox}>
+            <MaterialIcons name="broken-image" size={32} color={colors.text_gray} />
+            <Text style={styles.brokenText}>Image missing</Text>
+            <Text style={styles.brokenHint}>Tap to re-edit</Text>
+          </View>
+        )}
         {isSelectable && (
           <View style={styles.checkboxContainer}>
             <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
@@ -52,6 +61,24 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+  },
+  brokenBox: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 12,
+  },
+  brokenText: {
+    marginTop: 6,
+    fontFamily: typography.medium,
+    fontSize: 13,
+    color: colors.text_primary,
+  },
+  brokenHint: {
+    marginTop: 2,
+    fontFamily: typography.regular,
+    fontSize: 11,
+    color: colors.text_gray,
   },
   checkboxContainer: {
     position: "absolute",

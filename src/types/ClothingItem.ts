@@ -14,6 +14,7 @@ export interface ClothingItem {
   purchaseDate: string;
   price: number;
   isUnique?: boolean;
+  carouselTransform?: { scale: number; xRatio: number; yRatio: number };
 
   // processing status fields
   processingStatus: {
