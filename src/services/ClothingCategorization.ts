@@ -1,7 +1,7 @@
 import { ClothingItem } from "../types/ClothingItem";
 import { categories } from "../data/categories";
 import { colors as colorOptions, seasons, occasions } from "../data/options";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
 

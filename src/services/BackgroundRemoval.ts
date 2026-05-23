@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 const FAL_API_KEY = process.env.EXPO_PUBLIC_FAL_KEY;
 const API_ENDPOINT = "https://queue.fal.run/fal-ai/birefnet/v2";
@@ -54,7 +54,6 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
         method: "GET",
         headers: {
           Authorization: `Key ${FAL_API_KEY}`,
-          "Content-Type": "application/json",
         },
       });
 
@@ -72,12 +71,11 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
       }
     }
 
-    // Get the result
+    // Fetch the result from response_url
     const resultResponse = await fetch(response_url, {
       method: "GET",
       headers: {
         Authorization: `Key ${FAL_API_KEY}`,
-        "Content-Type": "application/json",
       },
     });
 
@@ -89,7 +87,8 @@ export const removeBackground = async (imageUri: string): Promise<string> => {
 
     const resultData = await resultResponse.json();
     console.debug("[BG Removal Service] Process Complete Time:", new Date().toISOString());
-    const imageUrl = resultData.image.url;
+    console.debug("[BG Removal Service] Result data:", JSON.stringify(resultData));
+    const imageUrl = resultData?.image?.url;
 
     if (!imageUrl) {
       throw new Error("No image URL in the result");
