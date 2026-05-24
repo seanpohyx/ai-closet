@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   tryOnButtonText: {
     fontSize: 16,
     fontFamily: typography.bold,
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
   resultContainer: {
     marginBottom: 24,

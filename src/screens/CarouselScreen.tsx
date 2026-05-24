@@ -245,7 +245,7 @@ const CategoryLane = ({ label, items, activeIndex, onChange, disabled }: LanePro
                   />
                   {!isAligned && (
                     <View style={laneStyles.warnBadge}>
-                      <MaterialIcons name="warning" size={12} color="#FFA500" />
+                      <Text style={laneStyles.warnText}>Tap to align</Text>
                     </View>
                   )}
                 </>
@@ -319,11 +319,19 @@ const laneStyles = StyleSheet.create({
   thumbImg: { width: "100%", height: "100%" },
   warnBadge: {
     position: "absolute",
-    top: 2,
-    right: 2,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 8,
-    padding: 1,
+    bottom: 4,
+    left: 4,
+    right: 4,
+    backgroundColor: colors.surface_overlay,
+    borderRadius: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+    alignItems: "center",
+  },
+  warnText: {
+    fontFamily: typography.medium,
+    fontSize: 9,
+    color: colors.text_inverse,
   },
   noneBox: { justifyContent: "center", alignItems: "center" },
   noneText: {

@@ -18,6 +18,8 @@ type TagData = {
 type ClothingFilters = {
   category?: string;
   tags?: string[];
+  colors?: string[];
+  printsOnly?: boolean;
 };
 
 type ProcessingError = {
@@ -118,25 +120,30 @@ export const ClothingProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // Memoized filtered items
   const filteredItems = useMemo(() => {
-    // Early return if no filters are active
-    if (activeFilters.category === "All" && (!activeFilters.tags || activeFilters.tags.length === 0)) {
-      return clothingItems;
-    }
-
-    // Create a Set of tag filters for O(1) lookup
     const tagFilters = new Set(activeFilters.tags);
+    const colorFilters = new Set(activeFilters.colors);
+
+    const hasAnyFilter =
+      (activeFilters.category && activeFilters.category !== "All") ||
+      tagFilters.size > 0 ||
+      colorFilters.size > 0 ||
+      activeFilters.printsOnly;
+
+    if (!hasAnyFilter) return clothingItems;
 
     return clothingItems.filter((item) => {
-      // Category filter
-      if (activeFilters.category !== "All" && item.category !== activeFilters.category) {
+      if (activeFilters.category && activeFilters.category !== "All" && item.category !== activeFilters.category) {
         return false;
       }
-
-      // Tag filter - only check if we have active tag filters
-      if (tagFilters.size > 0) {
-        return Array.from(tagFilters).every((tag) => item.tags.includes(tag));
+      if (tagFilters.size > 0 && !Array.from(tagFilters).every((t) => item.tags.includes(t))) {
+        return false;
       }
-
+      if (colorFilters.size > 0 && !item.color.some((c) => colorFilters.has(c))) {
+        return false;
+      }
+      if (activeFilters.printsOnly && !item.isUnique) {
+        return false;
+      }
       return true;
     });
   }, [clothingItems, activeFilters]);

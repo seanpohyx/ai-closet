@@ -67,16 +67,16 @@ const MultiSelectToggle = ({ options, selectedValues, onValueChange, disabled = 
 
 const styles = StyleSheet.create({
   button: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     marginRight: 8,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border_gray,
+    borderColor: colors.divider,
   },
   buttonSelected: {
-    backgroundColor: colors.tag_dark,
-    borderColor: colors.tag_dark,
+    backgroundColor: colors.accent_primary,
+    borderColor: colors.accent_primary,
   },
   buttonDisabled: {
     borderColor: colors.border_gray_light,

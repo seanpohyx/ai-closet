@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontFamily: typography.bold,
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
 });
 

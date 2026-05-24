@@ -92,7 +92,7 @@ const MainTabNavigator = () => (
       name="TryOn"
       component={TryOnStackNavigator}
       options={{
-        tabBarLabel: "Try-On",
+        tabBarLabel: "AI Mirror",
         tabBarIcon: ({ color, size }) => <FontAwesome6 name="wand-magic-sparkles" size={20} color={color} />,
       }}
     />
@@ -100,6 +100,7 @@ const MainTabNavigator = () => (
       name="Carousel"
       component={CarouselStackNavigator}
       options={{
+        tabBarLabel: "Mix & Match",
         tabBarIcon: ({ color, size }) => <MaterialIcons name="view-carousel" size={size} color={color} />,
       }}
     />
@@ -126,21 +127,21 @@ const AppNavigator = () => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: Platform.OS === "ios" ? 90 : 60,
-    paddingBottom: Platform.OS === "ios" ? 32 : 10,
-    paddingTop: 10,
-    backgroundColor: colors.screen_background,
-    borderTopColor: colors.divider_light,
+    height: Platform.OS === "ios" ? 88 : 58,
+    paddingBottom: Platform.OS === "ios" ? 30 : 8,
+    paddingTop: 8,
+    backgroundColor: colors.surface_base,
+    borderTopColor: colors.divider,
     borderTopWidth: 1,
     elevation: 0,
   },
   tabBarLabel: {
     fontFamily: typography.medium,
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: 11,
+    marginTop: 2,
   },
   tabBarIcon: {
-    marginTop: 4,
+    marginTop: 2,
   },
 });
 

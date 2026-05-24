@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   tryOnTypeText: {
     fontSize: 10,
     fontFamily: typography.medium,
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
   date: {
     fontSize: 12,

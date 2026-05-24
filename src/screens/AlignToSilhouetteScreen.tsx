@@ -9,6 +9,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import PressableFade from "../components/common/PressableFade";
+import ModalHeader from "../components/common/ModalHeader";
 import SilhouetteOverlay, { SilhouetteRegion } from "../components/carousel/SilhouetteOverlay";
 import { CarouselContext, Transform, IDENTITY_TRANSFORM } from "../contexts/CarouselContext";
 import { ClothingContext } from "../contexts/ClothingContext";
@@ -125,15 +126,11 @@ const AlignToSilhouetteScreen = ({ navigation, route }: Props) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right", "bottom"] as Edge[]}>
-      <View style={styles.header}>
-        <PressableFade onPress={() => navigation.goBack()} style={styles.iconBtn}>
-          <MaterialIcons name="close" size={24} color={colors.icon_stroke} />
-        </PressableFade>
-        <Text style={styles.title}>{title}</Text>
-        <PressableFade onPress={handleSave} style={styles.iconBtn}>
-          <Text style={styles.saveText}>Save</Text>
-        </PressableFade>
-      </View>
+      <ModalHeader
+        title={title}
+        onClose={() => navigation.goBack()}
+        rightAction={{ label: "Save", onPress: handleSave }}
+      />
 
       <Text style={styles.hint}>{hint}</Text>
 
@@ -230,19 +227,7 @@ const AlignableImage = ({ uri, initial, stage, onChange }: AlignableProps) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.screen_background },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider_light,
-  },
-  iconBtn: { padding: 8, minWidth: 56, alignItems: "center" },
-  title: { fontFamily: typography.bold, fontSize: 18, color: colors.text_primary },
-  saveText: { fontFamily: typography.semiBold, fontSize: 16, color: colors.primary_yellow },
+  container: { flex: 1, backgroundColor: colors.surface_base },
   hint: {
     fontFamily: typography.regular,
     fontSize: 12,

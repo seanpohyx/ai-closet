@@ -1,6 +1,5 @@
-import React, { useCallback, useContext, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Pressable, Dimensions, Alert } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import React, { useCallback, useContext, useMemo, useState } from "react";
+import { View, Text, StyleSheet, SectionList, Dimensions, Alert } from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { OutfitContext } from "../contexts/OutfitContext";
 import { colors } from "../styles/colors";
@@ -11,7 +10,10 @@ import { OutfitStackScreenProps } from "../types/navigation";
 import TagFilterSection from "../components/common/TagFilterSection";
 import DeleteModeHeader from "../components/common/DeleteModeHeader";
 import DeleteButton from "../components/common/DeleteButton";
+import EmptyState from "../components/common/EmptyState";
+import SectionHeader from "../components/common/SectionHeader";
 import { Outfit } from "../types/Outfit";
+import { groupOutfitsByOccasion } from "../utils/sectionList";
 
 type Props = OutfitStackScreenProps<"OutfitManagement">;
 
@@ -99,25 +101,44 @@ const OutfitManagementScreen = ({ navigation }: Props) => {
     setFilter("tags", newTags);
   };
 
-  const renderItem = ({ item, index }: { item: Outfit; index: number }) => {
-    const isFirstInRow = index % 2 === 0;
-    const style = isFirstInRow
-      ? { marginRight: GRID_SPACING / 2, marginBottom: GRID_SPACING }
-      : { marginLeft: GRID_SPACING / 2, marginBottom: GRID_SPACING };
+  const sections = useMemo(
+    () => groupOutfitsByOccasion(filteredOutfits, COLUMN_COUNT),
+    [filteredOutfits]
+  );
 
-    return (
-      <OutfitThumbnail
-        outfit={item}
-        width={ITEM_WIDTH}
-        height={ITEM_HEIGHT}
-        style={style}
-        onPress={() => handleItemPress(item.id)}
-        onLongPress={() => handleLongPress(item.id)}
-        isSelectable={isSelectionMode}
-        isSelected={selectedItems.has(item.id)}
-      />
-    );
-  };
+  const renderRow = ({ item: row }: { item: Outfit[] }) => (
+    <View style={styles.row}>
+      {row.map((outfit, idx) => {
+        const isFirst = idx === 0;
+        const style = isFirst
+          ? { marginRight: GRID_SPACING / 2, marginBottom: GRID_SPACING }
+          : { marginLeft: GRID_SPACING / 2, marginBottom: GRID_SPACING };
+        return (
+          <OutfitThumbnail
+            key={outfit.id}
+            outfit={outfit}
+            width={ITEM_WIDTH}
+            height={ITEM_HEIGHT}
+            style={style}
+            onPress={() => handleItemPress(outfit.id)}
+            onLongPress={() => handleLongPress(outfit.id)}
+            isSelectable={isSelectionMode}
+            isSelected={selectedItems.has(outfit.id)}
+          />
+        );
+      })}
+      {row.length < COLUMN_COUNT && (
+        <View
+          style={{
+            width: ITEM_WIDTH,
+            height: ITEM_HEIGHT,
+            marginLeft: GRID_SPACING / 2,
+            marginBottom: GRID_SPACING,
+          }}
+        />
+      )}
+    </View>
+  );
 
   const safeAreaEdges: Edge[] = ["top", "left", "right"];
 
@@ -129,23 +150,35 @@ const OutfitManagementScreen = ({ navigation }: Props) => {
       ) : (
         <View style={styles.header}>
           <Text style={styles.title}>My Outfits</Text>
-          <Pressable>
-            <MaterialIcons name="filter-list" size={24} color={colors.icon_stroke} />
-          </Pressable>
         </View>
       )}
 
-      {/* Tags Filter Section */}
-      <TagFilterSection tagData={tagData} selectedTags={activeFilters.tags || []} onTagPress={handleTagPress} />
+      {/* Tag Filter Section — hidden when no tags exist */}
+      {tagData.length > 0 && (
+        <TagFilterSection tagData={tagData} selectedTags={activeFilters.tags || []} onTagPress={handleTagPress} />
+      )}
 
-      {/* Outfit Grid */}
-      <FlatList
-        data={filteredOutfits}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={COLUMN_COUNT}
-        contentContainerStyle={[styles.gridContent, isSelectionMode && styles.gridContentWithDelete]}
-      />
+      {/* Outfit Grid (or empty state) */}
+      {filteredOutfits.length === 0 ? (
+        <EmptyState
+          icon="style"
+          title="No outfits yet"
+          hint="Combine items from your closet on the canvas to create your first outfit."
+          action={{
+            label: "Create outfit",
+            onPress: () => navigation.navigate("OutfitCanvas", { id: undefined }),
+          }}
+        />
+      ) : (
+        <SectionList
+          sections={sections}
+          keyExtractor={(row, index) => row.map((o) => o.id).join("-") + "-" + index}
+          renderItem={renderRow}
+          renderSectionHeader={({ section }) => <SectionHeader title={section.title} count={section.count} />}
+          stickySectionHeadersEnabled
+          contentContainerStyle={[styles.gridContent, isSelectionMode && styles.gridContentWithDelete]}
+        />
+      )}
 
       {/* Add Button or Delete Button */}
       {isSelectionMode ? (
@@ -176,10 +209,14 @@ const styles = StyleSheet.create({
     color: colors.text_primary,
   },
   gridContent: {
-    padding: GRID_PADDING,
+    paddingHorizontal: GRID_PADDING,
+    paddingBottom: 24,
   },
   gridContentWithDelete: {
     paddingBottom: 80, // Additional padding when delete button is shown
+  },
+  row: {
+    flexDirection: "row",
   },
 });
 

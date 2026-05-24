@@ -16,21 +16,21 @@ type TryOnOption = {
 const tryOnOptions: TryOnOption[] = [
   {
     id: "single",
-    title: "Single Closet Item",
-    description: "Try a single item from your closet",
+    title: "From My Closet",
+    description: "Pick a single item you've already added.",
     icon: "checkroom",
   },
   {
-    id: "discover",
-    title: "Discover & Try",
-    description: "Try on new items from your photo albums or product images from online stores",
-    icon: "photo-library",
+    id: "outfit",
+    title: "Saved Outfit",
+    description: "Try on a full outfit from the Outfits tab.",
+    icon: "style",
   },
   {
-    id: "outfit",
-    title: "Complete Outfits",
-    description: "Try on your saved outfit with multiple pieces",
-    icon: "style",
+    id: "discover",
+    title: "New Photo",
+    description: "Upload from your gallery or a product shot.",
+    icon: "photo-library",
   },
 ];
 

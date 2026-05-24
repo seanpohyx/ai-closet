@@ -5,6 +5,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import PressableFade from "../components/common/PressableFade";
+import ModalHeader from "../components/common/ModalHeader";
 import { CarouselContext } from "../contexts/CarouselContext";
 import { removeBackground } from "../services/BackgroundRemoval";
 import { CarouselStackScreenProps } from "../types/navigation";
@@ -86,13 +87,7 @@ const CarouselSetupScreen = ({ navigation }: Props) => {
 
   return (
     <SafeAreaView style={styles.container} edges={safeAreaEdges}>
-      <View style={styles.header}>
-        <PressableFade onPress={() => navigation.goBack()} style={styles.iconBtn}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.icon_stroke} />
-        </PressableFade>
-        <Text style={styles.title}>Your Carousel Photo</Text>
-        <View style={styles.iconBtn} />
-      </View>
+      <ModalHeader title="Your Carousel Photo" onClose={() => navigation.goBack()} />
 
       <View style={styles.body}>
         {userPhotoUri ? (
@@ -190,18 +185,7 @@ const CarouselSetupScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.screen_background },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider_light,
-  },
-  iconBtn: { padding: 8, width: 40 },
-  title: { fontFamily: typography.bold, fontSize: 18, color: colors.text_primary },
+  container: { flex: 1, backgroundColor: colors.surface_base },
   body: { flex: 1, padding: 24 },
   subtitle: { fontFamily: typography.semiBold, fontSize: 18, color: colors.text_primary, marginBottom: 4 },
   hint: { fontFamily: typography.regular, fontSize: 14, color: colors.text_gray, marginBottom: 16 },
@@ -235,7 +219,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-  primaryBtnText: { fontFamily: typography.bold, fontSize: 16, color: colors.text_primary },
+  primaryBtnText: { fontFamily: typography.bold, fontSize: 16, color: colors.text_inverse },
   btnDisabled: { opacity: 0.5 },
 });
 

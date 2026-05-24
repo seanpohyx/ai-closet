@@ -6,7 +6,7 @@ import PressableFade from "./PressableFade";
 
 const AddButton = ({ onPress }: { onPress: () => void }) => (
   <PressableFade style={styles.button} onPress={onPress}>
-    <MaterialIcons name="add" size={24} color={colors.icon_stroke} />
+    <MaterialIcons name="add" size={24} color={colors.text_inverse} />
   </PressableFade>
 );
 

@@ -1,5 +1,5 @@
-import React, { useCallback, useContext, useState } from "react";
-import { View, Text, StyleSheet, FlatList, ScrollView, Pressable, Alert } from "react-native";
+import React, { useCallback, useContext, useMemo, useState } from "react";
+import { View, Text, StyleSheet, SectionList, ScrollView, Pressable, Alert } from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -7,6 +7,9 @@ import * as ImageManipulator from "expo-image-manipulator";
 import { ClothingContext } from "../contexts/ClothingContext";
 import { CarouselContext } from "../contexts/CarouselContext";
 import UploadTipsCard from "../components/common/UploadTipsCard";
+import EmptyState from "../components/common/EmptyState";
+import SectionHeader from "../components/common/SectionHeader";
+import ClosetFilterSheet, { ClosetFilterValue, countActiveFilters } from "../components/clothing/ClosetFilterSheet";
 import { ClothingItem } from "../types/ClothingItem";
 import { ClosetStackScreenProps } from "../types/navigation";
 import ClothingItemThumbnail from "../components/clothing/ClothingItemThumbnail";
@@ -15,8 +18,11 @@ import TagFilterSection from "../components/common/TagFilterSection";
 import DeleteModeHeader from "../components/common/DeleteModeHeader";
 import DeleteButton from "../components/common/DeleteButton";
 import { categories } from "../data/categories";
+import { groupClothingForSectionList } from "../utils/sectionList";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
+
+const CLOSET_COLUMNS = 3;
 
 type Props = ClosetStackScreenProps<"ClothingManagement">;
 
@@ -45,6 +51,7 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [tipsVisible, setTipsVisible] = useState(false);
   const [pendingPickType, setPendingPickType] = useState<"camera" | "gallery" | null>(null);
+  const [filterSheetVisible, setFilterSheetVisible] = useState(false);
 
   if (!context) {
     return <Text>Loading...</Text>;
@@ -192,14 +199,28 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
     setFilter("tags", newTags);
   };
 
-  const renderItem = ({ item }: { item: ClothingItem }) => (
-    <ClothingItemThumbnail
-      item={item}
-      onPress={() => handleItemPress(item.id)}
-      onLongPress={() => handleLongPress(item.id)}
-      isSelectable={isSelectionMode}
-      isSelected={selectedItems.has(item.id)}
-    />
+  const sections = useMemo(
+    () => groupClothingForSectionList(filteredItems, activeFilters.category || "All", CLOSET_COLUMNS),
+    [filteredItems, activeFilters.category]
+  );
+
+  const renderRow = ({ item: row }: { item: ClothingItem[] }) => (
+    <View style={styles.row}>
+      {row.map((clothingItem) => (
+        <ClothingItemThumbnail
+          key={clothingItem.id}
+          item={clothingItem}
+          onPress={() => handleItemPress(clothingItem.id)}
+          onLongPress={() => handleLongPress(clothingItem.id)}
+          isSelectable={isSelectionMode}
+          isSelected={selectedItems.has(clothingItem.id)}
+        />
+      ))}
+      {row.length < CLOSET_COLUMNS &&
+        Array.from({ length: CLOSET_COLUMNS - row.length }).map((_, i) => (
+          <View key={`spacer-${i}`} style={styles.spacer} />
+        ))}
+    </View>
   );
 
   const safeAreaEdges: Edge[] = ["top", "left", "right"];
@@ -212,8 +233,19 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
       ) : (
         <View style={styles.header}>
           <Text style={styles.title}>My Closet</Text>
-          <Pressable>
-            <MaterialIcons name="filter-list" size={24} color={colors.icon_stroke} />
+          <Pressable onPress={() => setFilterSheetVisible(true)} style={styles.filterBtn} hitSlop={8}>
+            <MaterialIcons name="tune" size={22} color={colors.icon_stroke} />
+            {(() => {
+              const count = countActiveFilters({
+                colors: activeFilters.colors || [],
+                printsOnly: !!activeFilters.printsOnly,
+              });
+              return count > 0 ? (
+                <View style={styles.filterBadge}>
+                  <Text style={styles.filterBadgeText}>{count}</Text>
+                </View>
+              ) : null;
+            })()}
           </Pressable>
         </View>
       )}
@@ -242,17 +274,29 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
         ))}
       </ScrollView>
 
-      {/* Tag Filter Section */}
-      <TagFilterSection tagData={tagData} selectedTags={activeFilters.tags || []} onTagPress={handleTagPress} />
+      {/* Tag Filter Section — hidden when no tags exist */}
+      {tagData.length > 0 && (
+        <TagFilterSection tagData={tagData} selectedTags={activeFilters.tags || []} onTagPress={handleTagPress} />
+      )}
 
-      {/* Clothing Grid */}
-      <FlatList
-        data={filteredItems}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={3}
-        contentContainerStyle={[styles.gridContent, isSelectionMode && styles.gridContentWithDelete]}
-      />
+      {/* Clothing Grid (or empty state) */}
+      {filteredItems.length === 0 ? (
+        <EmptyState
+          icon="checkroom"
+          title="Your closet is empty"
+          hint="Add clothing items from your camera or gallery to start building your closet."
+          action={{ label: "Add your first item", onPress: handleChoosePhoto }}
+        />
+      ) : (
+        <SectionList
+          sections={sections}
+          keyExtractor={(row, index) => row.map((it) => it.id).join("-") + "-" + index}
+          renderItem={renderRow}
+          renderSectionHeader={({ section }) => <SectionHeader title={section.title} count={section.count} />}
+          stickySectionHeadersEnabled
+          contentContainerStyle={[styles.gridContent, isSelectionMode && styles.gridContentWithDelete]}
+        />
+      )}
 
       {/* Add Button or Delete Button */}
       {isSelectionMode ? (
@@ -267,6 +311,19 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
         onDismiss={() => {
           setTipsVisible(false);
           setPendingPickType(null);
+        }}
+      />
+
+      <ClosetFilterSheet
+        visible={filterSheetVisible}
+        onClose={() => setFilterSheetVisible(false)}
+        initial={{
+          colors: activeFilters.colors || [],
+          printsOnly: !!activeFilters.printsOnly,
+        }}
+        onApply={(next: ClosetFilterValue) => {
+          setFilter("colors", next.colors);
+          setFilter("printsOnly", next.printsOnly);
         }}
       />
     </SafeAreaView>
@@ -290,6 +347,29 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: typography.bold,
     color: colors.text_primary,
+  },
+  filterBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  filterBadge: {
+    position: "absolute",
+    top: 4,
+    right: 2,
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    backgroundColor: colors.accent_primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  filterBadgeText: {
+    fontFamily: typography.bold,
+    fontSize: 10,
+    color: colors.text_inverse,
   },
   categoryTabsContainer: {
     maxHeight: 48,
@@ -316,7 +396,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   categoryTabTextSelected: {
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
   categoryCount: {
     fontFamily: typography.regular,
@@ -324,14 +404,21 @@ const styles = StyleSheet.create({
     color: colors.text_gray,
   },
   categoryCountSelected: {
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
   gridContent: {
-    paddingTop: 6,
     paddingHorizontal: 10,
+    paddingBottom: 24,
   },
   gridContentWithDelete: {
     paddingBottom: 80,
+  },
+  row: {
+    flexDirection: "row",
+  },
+  spacer: {
+    flex: 1 / CLOSET_COLUMNS,
+    aspectRatio: 1,
   },
 });
 

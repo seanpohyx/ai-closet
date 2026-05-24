@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   categoryTabTextSelected: {
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
   categoryCount: {
     fontFamily: typography.regular,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     color: colors.text_gray,
   },
   categoryCountSelected: {
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
   tagsContainer: {
     maxHeight: 38,

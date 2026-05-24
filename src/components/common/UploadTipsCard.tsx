@@ -47,7 +47,7 @@ const UploadTipsCard = ({ visible, onContinue, onDismiss }: Props) => {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: colors.surface_overlay,
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-  primaryBtnText: { fontFamily: typography.bold, fontSize: 15, color: colors.text_primary },
+  primaryBtnText: { fontFamily: typography.bold, fontSize: 15, color: colors.text_inverse },
 });
 
 export default UploadTipsCard;

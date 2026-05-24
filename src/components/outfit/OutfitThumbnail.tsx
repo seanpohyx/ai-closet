@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Image, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Outfit } from "../../types/Outfit";
@@ -18,19 +18,27 @@ type Props = {
 };
 
 const OutfitThumbnail = ({ outfit, width, height, onPress, onLongPress, isSelectable, isSelected, style }: Props) => {
-  const thumbnailStyle = {
-    width,
-    height,
-  };
+  const thumbnailStyle = { width, height };
+  // Track image load failures so we can show a placeholder even when
+  // outfit.imageUri is non-empty but stale (file removed, OS cleaned tmp dir,
+  // Expo Go sandbox path changed between sessions, etc.)
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  const hasImage = !!outfit.imageUri && !loadFailed;
 
   return (
     <PressableFade style={[style]} onPress={onPress} onLongPress={onLongPress}>
       <View style={[styles.card, thumbnailStyle, isSelected && styles.cardSelected]}>
-        {outfit.imageUri ? (
-          <Image source={{ uri: outfit.imageUri }} style={styles.image} resizeMode="cover" />
+        {hasImage ? (
+          <Image
+            source={{ uri: outfit.imageUri }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={() => setLoadFailed(true)}
+          />
         ) : (
           <View style={styles.brokenBox}>
-            <MaterialIcons name="broken-image" size={32} color={colors.text_gray} />
+            <MaterialIcons name="broken-image" size={32} color={colors.text_tertiary} />
             <Text style={styles.brokenText}>Image missing</Text>
             <Text style={styles.brokenHint}>Tap to re-edit</Text>
           </View>
@@ -38,7 +46,7 @@ const OutfitThumbnail = ({ outfit, width, height, onPress, onLongPress, isSelect
         {isSelectable && (
           <View style={styles.checkboxContainer}>
             <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-              {isSelected && <MaterialIcons name="check" size={16} color={colors.screen_background} />}
+              {isSelected && <MaterialIcons name="check" size={16} color={colors.text_inverse} />}
             </View>
           </View>
         )}
@@ -49,14 +57,14 @@ const OutfitThumbnail = ({ outfit, width, height, onPress, onLongPress, isSelect
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.thumbnail_background,
-    borderRadius: 12,
+    backgroundColor: colors.surface_raised,
+    borderRadius: 14,
     overflow: "hidden",
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: "transparent",
   },
   cardSelected: {
-    borderColor: colors.primary_yellow,
+    borderColor: colors.accent_primary,
   },
   image: {
     width: "100%",
@@ -78,7 +86,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontFamily: typography.regular,
     fontSize: 11,
-    color: colors.text_gray,
+    color: colors.text_secondary,
   },
   checkboxContainer: {
     position: "absolute",
@@ -89,14 +97,14 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.thumbnail_background,
+    backgroundColor: colors.surface_raised,
     borderWidth: 2,
-    borderColor: colors.primary_yellow,
+    borderColor: colors.accent_primary,
     alignItems: "center",
     justifyContent: "center",
   },
   checkboxSelected: {
-    backgroundColor: colors.primary_yellow,
+    backgroundColor: colors.accent_primary,
   },
 });
 
