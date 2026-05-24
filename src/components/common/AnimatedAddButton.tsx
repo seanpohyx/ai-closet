@@ -72,7 +72,7 @@ const AnimatedAddButton = ({
           toggleMenu();
         }}
       >
-        <MaterialIcons name={icon} size={24} color={colors.icon_stroke} />
+        <MaterialIcons name={icon} size={24} color={colors.text_inverse} />
       </Pressable>
     </Animated.View>
   );
@@ -83,7 +83,7 @@ const AnimatedAddButton = ({
         <Pressable
           style={styles.dimmedBackground}
           onPress={toggleMenu}
-          android_ripple={{ color: "rgba(0,0,0,0.2)" }}
+          android_ripple={{ color: colors.surface_overlay }}
         />
       )}
 
@@ -117,7 +117,7 @@ const AnimatedAddButton = ({
         ]}
       >
         <Pressable onPress={toggleMenu} style={styles.mainButtonTouchable}>
-          <MaterialIcons name="add" size={26} color={colors.icon_stroke} />
+          <MaterialIcons name="add" size={26} color={colors.text_inverse} />
         </Pressable>
       </Animated.View>
     </>

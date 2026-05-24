@@ -13,29 +13,42 @@ type Props = {
   isSelected?: boolean;
 };
 
-const ClothingItemThumbnail = ({ item, onPress, onLongPress, isSelectable, isSelected }: Props) => (
-  <PressableFade
-    containerStyle={styles.container}
-    style={styles.pressableContent}
-    onPress={onPress}
-    onLongPress={onLongPress}
-  >
-    <View style={[styles.card, isSelected && styles.cardSelected]}>
-      <Image
-        source={{ uri: item.backgroundRemovedImageUri || item.imageUri }}
-        style={styles.image}
-        resizeMode="contain"
-      />
-      {isSelectable && (
-        <View style={styles.checkboxContainer}>
-          <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-            {isSelected && <MaterialIcons name="check" size={16} color={colors.screen_background} />}
+const LAYERED = new Set(["Tops", "Bottoms", "Dresses"]);
+
+const ClothingItemThumbnail = ({ item, onPress, onLongPress, isSelectable, isSelected }: Props) => {
+  const needsCategory = !item.category;
+  const needsAlignment = LAYERED.has(item.category) && !item.carouselTransform;
+  const needsSetup = !isSelectable && (needsCategory || needsAlignment);
+
+  return (
+    <PressableFade
+      containerStyle={styles.container}
+      style={styles.pressableContent}
+      onPress={onPress}
+      onLongPress={onLongPress}
+    >
+      <View style={[styles.card, isSelected && styles.cardSelected]}>
+        <Image
+          source={{ uri: item.backgroundRemovedImageUri || item.imageUri }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+        {needsSetup && (
+          <View style={styles.setupBadge}>
+            <View style={styles.setupDot} />
           </View>
-        </View>
-      )}
-    </View>
-  </PressableFade>
-);
+        )}
+        {isSelectable && (
+          <View style={styles.checkboxContainer}>
+            <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+              {isSelected && <MaterialIcons name="check" size={16} color={colors.text_inverse} />}
+            </View>
+          </View>
+        )}
+      </View>
+    </PressableFade>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -48,14 +61,14 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: colors.thumbnail_background,
-    borderRadius: 12,
+    backgroundColor: colors.surface_raised,
+    borderRadius: 14,
     padding: 4,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: "transparent",
   },
   cardSelected: {
-    borderColor: colors.primary_yellow,
+    borderColor: colors.accent_primary,
   },
   image: {
     width: "100%",
@@ -78,6 +91,25 @@ const styles = StyleSheet.create({
   },
   checkboxSelected: {
     backgroundColor: colors.primary_yellow,
+  },
+  setupBadge: {
+    position: "absolute",
+    top: 6,
+    left: 6,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: colors.surface_base,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.divider,
+  },
+  setupDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: colors.accent_warning,
   },
 });
 

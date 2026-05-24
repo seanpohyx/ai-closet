@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: FONT_SIZE.REGULAR,
     fontFamily: typography.bold,
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
 });
 

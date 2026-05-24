@@ -121,8 +121,8 @@ const GuideLine = ({ y, label, inset }: GuideLineProps) => (
   </>
 );
 
-const OUTLINE_COLOR = "rgba(0, 0, 0, 0.25)";
-const GUIDE_COLOR = "rgba(255, 165, 0, 0.7)";
+const OUTLINE_COLOR = "rgba(82, 82, 91, 0.35)"; // text_secondary @ 35%
+const GUIDE_COLOR = "rgba(45, 95, 74, 0.75)"; // accent_primary @ 75%
 
 const styles = StyleSheet.create({
   head: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     color: GUIDE_COLOR,
     fontWeight: "600",
     marginTop: -7,
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    backgroundColor: "rgba(255, 255, 255, 0.85)",
     paddingHorizontal: 3,
     borderRadius: 3,
   },

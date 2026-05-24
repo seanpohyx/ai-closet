@@ -145,7 +145,7 @@ const OutfitDetailScreen = ({ route, navigation }: Props) => {
               onPress={handleEditOutfit}
             >
               <View style={styles.editButtonContent}>
-                <MaterialIcons name="edit" size={20} color={colors.text_primary} />
+                <MaterialIcons name="edit" size={20} color={colors.text_inverse} />
                 <Text style={styles.editButtonText}>Edit Outfit</Text>
               </View>
             </PressableFade>
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontSize: 14,
     fontFamily: typography.medium,
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
   section: {
     paddingVertical: 16,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 16,
     fontFamily: typography.bold,
-    color: colors.text_primary,
+    color: colors.text_inverse,
   },
 });
 

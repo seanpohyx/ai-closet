@@ -1,8 +1,7 @@
 import React, { useContext } from "react";
 import { View, Text, StyleSheet, FlatList } from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
-import PressableFade from "../components/common/PressableFade";
+import ModalHeader from "../components/common/ModalHeader";
 import ClothingItemThumbnail from "../components/clothing/ClothingItemThumbnail";
 import { ClothingContext } from "../contexts/ClothingContext";
 import { ClothingItem } from "../types/ClothingItem";
@@ -35,12 +34,7 @@ const SelectClothingScreen = ({ navigation, route }: Props) => {
 
   return (
     <SafeAreaView style={styles.container} edges={safeAreaEdges}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Choose Item</Text>
-        <PressableFade onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <MaterialIcons name="close" size={24} color={colors.icon_stroke} />
-        </PressableFade>
-      </View>
+      <ModalHeader title="Choose Item" onClose={() => navigation.goBack()} />
 
       {clothingItems.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -63,22 +57,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.screen_background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider_light,
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: typography.bold,
-    color: colors.text_primary,
-  },
-  closeButton: {
-    padding: 4,
   },
   gridContent: {
     padding: 10,
