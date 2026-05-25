@@ -14,9 +14,9 @@ const RelevantOutfits = ({ clothingItemId, onOutfitPress }: Props) => {
   const outfitContext = useContext(OutfitContext);
   const { width } = useWindowDimensions();
 
-  // Compact 3-per-screen cards so the section stays a constant vertical
-  // footprint regardless of how many outfits reference this item.
-  const thumbnailWidth = (width - 32 - 16) / 3;
+  // Show ~3 cards with a slice of the 4th peeking off-screen — the peek is
+  // what tells the user the strip is horizontally scrollable.
+  const thumbnailWidth = (width - 32 - 16) / 3.3;
   const thumbnailHeight = (thumbnailWidth * 4) / 3; // 3:4 aspect ratio
 
   const relevantOutfits = useMemo(() => {
