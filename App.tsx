@@ -1,11 +1,11 @@
 import "react-native-get-random-values";
 import { useFonts } from "expo-font";
 import {
-  PlusJakartaSans_400Regular,
-  PlusJakartaSans_500Medium,
-  PlusJakartaSans_600SemiBold,
-  PlusJakartaSans_700Bold,
-} from "@expo-google-fonts/plus-jakarta-sans";
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 import AppNavigator from "./src/navigation";
 import { ClothingProvider } from "./src/contexts/ClothingContext";
 import { VirtualTryOnProvider } from "./src/contexts/VirtualTryOnContext";
@@ -17,10 +17,10 @@ import { StyleSheet } from "react-native";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    "PlusJakartaSans-Regular": PlusJakartaSans_400Regular,
-    "PlusJakartaSans-Medium": PlusJakartaSans_500Medium,
-    "PlusJakartaSans-SemiBold": PlusJakartaSans_600SemiBold,
-    "PlusJakartaSans-Bold": PlusJakartaSans_700Bold,
+    "Inter-Regular": Inter_400Regular,
+    "Inter-Medium": Inter_500Medium,
+    "Inter-SemiBold": Inter_600SemiBold,
+    "Inter-Bold": Inter_700Bold,
   });
 
   if (!fontsLoaded) {

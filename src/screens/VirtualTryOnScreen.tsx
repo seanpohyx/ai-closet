@@ -5,7 +5,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system/legacy";
 import { colors } from "../styles/colors";
-import { typography } from "../styles/globalStyles";
+import { typography, displayStyles } from "../styles/globalStyles";
 import PressableFade from "../components/common/PressableFade";
 import TryOnOptionSheet from "../components/virtualTryOn/TryOnOptionSheet";
 import ContentSelectionBox from "../components/virtualTryOn/ContentSelectionBox";
@@ -407,11 +407,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.divider_light,
   },
-  title: {
-    fontSize: 24,
-    fontFamily: typography.bold,
-    color: colors.text_primary,
-  },
+  title: displayStyles.display,
   content: {
     flex: 1,
     padding: 16,

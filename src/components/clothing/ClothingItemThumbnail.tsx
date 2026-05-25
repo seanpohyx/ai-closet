@@ -1,8 +1,9 @@
 import React from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View, Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { ClothingItem } from "../../types/ClothingItem";
 import { colors } from "../../styles/colors";
+import { typography } from "../../styles/globalStyles";
 import PressableFade from "../common/PressableFade";
 
 type Props = {
@@ -11,14 +12,16 @@ type Props = {
   onLongPress?: () => void;
   isSelectable?: boolean;
   isSelected?: boolean;
+  usageCount?: number;
 };
 
 const LAYERED = new Set(["Tops", "Bottoms", "Dresses"]);
 
-const ClothingItemThumbnail = ({ item, onPress, onLongPress, isSelectable, isSelected }: Props) => {
+const ClothingItemThumbnail = ({ item, onPress, onLongPress, isSelectable, isSelected, usageCount }: Props) => {
   const needsCategory = !item.category;
   const needsAlignment = LAYERED.has(item.category) && !item.carouselTransform;
   const needsSetup = !isSelectable && (needsCategory || needsAlignment);
+  const showUsage = !isSelectable && typeof usageCount === "number" && usageCount > 0;
 
   return (
     <PressableFade
@@ -36,6 +39,11 @@ const ClothingItemThumbnail = ({ item, onPress, onLongPress, isSelectable, isSel
         {needsSetup && (
           <View style={styles.setupBadge}>
             <View style={styles.setupDot} />
+          </View>
+        )}
+        {showUsage && (
+          <View style={styles.usagePill}>
+            <Text style={styles.usagePillText}>{usageCount} uses</Text>
           </View>
         )}
         {isSelectable && (
@@ -61,11 +69,16 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: colors.surface_raised,
+    backgroundColor: colors.surface_base,
     borderRadius: 14,
     padding: 4,
     borderWidth: 1.5,
     borderColor: "transparent",
+    shadowColor: "#18181B",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardSelected: {
     borderColor: colors.accent_primary,
@@ -110,6 +123,21 @@ const styles = StyleSheet.create({
     height: 7,
     borderRadius: 3.5,
     backgroundColor: colors.accent_warning,
+  },
+  usagePill: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: colors.accent_primary,
+  },
+  usagePillText: {
+    fontFamily: typography.semiBold,
+    fontSize: 10,
+    color: colors.text_inverse,
+    letterSpacing: 0.2,
   },
 });
 

@@ -2,11 +2,21 @@ import { StyleSheet } from "react-native";
 import { colors } from "./colors";
 
 export const typography = {
-  regular: "PlusJakartaSans-Regular",
-  medium: "PlusJakartaSans-Medium",
-  semiBold: "PlusJakartaSans-SemiBold",
-  bold: "PlusJakartaSans-Bold",
+  regular: "Inter-Regular",
+  medium: "Inter-Medium",
+  semiBold: "Inter-SemiBold",
+  bold: "Inter-Bold",
 };
+
+export const displayStyles = StyleSheet.create({
+  display: {
+    fontFamily: typography.bold,
+    fontSize: 32,
+    lineHeight: 36,
+    letterSpacing: -0.5,
+    color: colors.text_primary,
+  },
+});
 
 export default StyleSheet.create({
   container: {

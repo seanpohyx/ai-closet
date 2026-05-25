@@ -6,6 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { ClothingContext } from "../contexts/ClothingContext";
 import { CarouselContext } from "../contexts/CarouselContext";
+import { OutfitContext } from "../contexts/OutfitContext";
 import UploadTipsCard from "../components/common/UploadTipsCard";
 import EmptyState from "../components/common/EmptyState";
 import SectionHeader from "../components/common/SectionHeader";
@@ -20,7 +21,7 @@ import DeleteButton from "../components/common/DeleteButton";
 import { categories } from "../data/categories";
 import { groupClothingForSectionList } from "../utils/sectionList";
 import { colors } from "../styles/colors";
-import { typography } from "../styles/globalStyles";
+import { typography, displayStyles } from "../styles/globalStyles";
 
 const CLOSET_COLUMNS = 3;
 
@@ -55,6 +56,7 @@ const CategoryTab = ({ name, isSelected, onPress, count }: CategoryTabProps) => 
 const ClothingManagementScreen = ({ navigation }: Props) => {
   const context = useContext(ClothingContext);
   const carouselCtx = useContext(CarouselContext);
+  const outfitCtx = useContext(OutfitContext);
 
   // Selection state
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -215,6 +217,17 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
     [filteredItems, activeFilters.category]
   );
 
+  const usageMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (!outfitCtx) return map;
+    for (const outfit of outfitCtx.outfits) {
+      for (const ref of outfit.clothingItems) {
+        map.set(ref.id, (map.get(ref.id) || 0) + 1);
+      }
+    }
+    return map;
+  }, [outfitCtx]);
+
   const renderRow = ({ item: row }: { item: ClothingItem[] }) => (
     <View style={styles.row}>
       {row.map((clothingItem) => (
@@ -225,6 +238,7 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
           onLongPress={() => handleLongPress(clothingItem.id)}
           isSelectable={isSelectionMode}
           isSelected={selectedItems.has(clothingItem.id)}
+          usageCount={usageMap.get(clothingItem.id)}
         />
       ))}
       {row.length < CLOSET_COLUMNS &&
@@ -363,11 +377,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
   },
-  title: {
-    fontSize: 24,
-    fontFamily: typography.bold,
-    color: colors.text_primary,
-  },
+  title: displayStyles.display,
   headerActions: {
     flexDirection: "row",
     alignItems: "center",

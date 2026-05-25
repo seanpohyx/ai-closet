@@ -57,11 +57,16 @@ const OutfitThumbnail = ({ outfit, width, height, onPress, onLongPress, isSelect
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface_raised,
+    backgroundColor: colors.surface_base,
     borderRadius: 14,
     overflow: "hidden",
     borderWidth: 1.5,
     borderColor: "transparent",
+    shadowColor: "#18181B",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardSelected: {
     borderColor: colors.accent_primary,

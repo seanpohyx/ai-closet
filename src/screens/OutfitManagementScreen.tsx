@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, SectionList, Dimensions, Alert } from "react-na
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { OutfitContext } from "../contexts/OutfitContext";
 import { colors } from "../styles/colors";
-import { typography } from "../styles/globalStyles";
+import { typography, displayStyles } from "../styles/globalStyles";
 import AddButton from "../components/common/AddButton";
 import OutfitThumbnail from "../components/outfit/OutfitThumbnail";
 import { OutfitStackScreenProps } from "../types/navigation";
@@ -203,11 +203,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
   },
-  title: {
-    fontSize: 24,
-    fontFamily: typography.bold,
-    color: colors.text_primary,
-  },
+  title: displayStyles.display,
   gridContent: {
     paddingHorizontal: GRID_PADDING,
     paddingBottom: 24,

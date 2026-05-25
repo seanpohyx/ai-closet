@@ -16,7 +16,7 @@ import { ClothingContext } from "../contexts/ClothingContext";
 import { ClothingItem } from "../types/ClothingItem";
 import { CarouselStackScreenProps } from "../types/navigation";
 import { colors } from "../styles/colors";
-import { typography } from "../styles/globalStyles";
+import { typography, displayStyles } from "../styles/globalStyles";
 
 type Props = CarouselStackScreenProps<"CarouselHome">;
 
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.divider_light,
   },
-  title: { fontFamily: typography.bold, fontSize: 22, color: colors.text_primary },
+  title: displayStyles.display,
   headerActions: { flexDirection: "row" },
   iconBtn: { padding: 8, marginLeft: 4 },
   body: { flex: 1 },
