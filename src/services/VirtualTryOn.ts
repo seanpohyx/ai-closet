@@ -51,8 +51,9 @@ export const virtualTryOn = async (request: TryOnRequest): Promise<TryOnResponse
       throw new Error("No image URL in result");
     }
 
-    // Download result image locally
-    const localUri = `${FileSystem.cacheDirectory}try-on-${Date.now()}.jpg`;
+    // Download result into the documents directory so it survives cache
+    // eviction and Expo Go sandbox path changes between launches.
+    const localUri = `${FileSystem.documentDirectory}try-on-${Date.now()}.jpg`;
     const downloadResumable = FileSystem.createDownloadResumable(imageUrl, localUri);
     const downloadResult = await downloadResumable.downloadAsync();
     console.debug("[VTON Service] Download Complete Time:", new Date().toISOString());

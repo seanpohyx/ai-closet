@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useContext } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert, Image } from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system/legacy";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
 import PressableFade from "../components/common/PressableFade";
@@ -12,17 +14,17 @@ import TryOnProgress from "../components/virtualTryOn/TryOnProgress";
 import RecentlyTriedSection from "../components/virtualTryOn/RecentlyTriedSection";
 import { virtualTryOn } from "../services/VirtualTryOn";
 import { VirtualTryOnContext } from "../contexts/VirtualTryOnContext";
+import { ClothingContext } from "../contexts/ClothingContext";
 import { VirtualTryOnItem } from "../types/VirtualTryOn";
 import { TryOnStackScreenProps } from "../types/navigation";
 import DeleteModeHeader from "../components/common/DeleteModeHeader";
-import DeleteButton from "../components/common/DeleteButton";
 
 type Props = TryOnStackScreenProps<"VirtualTryOn">;
 
 const VirtualTryOnScreen = ({ navigation }: Props) => {
   const [isOptionSheetVisible, setOptionSheetVisible] = useState(false);
   const [selectedOutfitUri, setSelectedOutfitUri] = useState<string>();
-  const [selectedPhotoUri, setSelectedPhotoUri] = useState<string>();
+  const [selectedPhotoUri, setSelectedPhotoUri] = useState<string | undefined>();
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [resultImageUri, setResultImageUri] = useState<string>();
@@ -30,10 +32,19 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const tryOnContext = useContext(VirtualTryOnContext);
+  const clothingContext = useContext(ClothingContext);
   if (!tryOnContext) {
     return null;
   }
-  const { recentTryOns, addTryOn, deleteHistoryItems } = tryOnContext;
+  const { recentTryOns, addTryOn, deleteHistoryItems, userPhotoUri, setUserPhotoUri } = tryOnContext;
+
+  // Hydrate the local photo picker from persisted context once on mount.
+  useEffect(() => {
+    if (userPhotoUri && !selectedPhotoUri) {
+      setSelectedPhotoUri(userPhotoUri);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPhotoUri]);
 
   // Progress timer effect
   useEffect(() => {
@@ -105,7 +116,22 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
 
   const handlePhotoSelect = async () => {
     const uri = await pickImage();
-    if (uri) {
+    if (!uri) return;
+    try {
+      // Normalize to JPEG and persist into documents directory so the photo
+      // survives across app launches (the picker's URI is a temp path).
+      const jpeg = await ImageManipulator.manipulateAsync(uri, [], {
+        compress: 0.9,
+        format: ImageManipulator.SaveFormat.JPEG,
+      });
+      const destUri = `${FileSystem.documentDirectory}fitting-user-photo-${Date.now()}.jpg`;
+      await FileSystem.copyAsync({ from: jpeg.uri, to: destUri });
+      setSelectedPhotoUri(destUri);
+      setUserPhotoUri(destUri);
+      setResultImageUri(undefined);
+    } catch (e) {
+      console.error("Failed to persist user photo:", e);
+      // Fallback: at least set the picker URI so the user can still try-on now
       setSelectedPhotoUri(uri);
       setResultImageUri(undefined);
     }
@@ -187,33 +213,67 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
     setSelectedItems(new Set());
   }, []);
 
-  const handleDelete = useCallback(() => {
+  const exitSelection = () => {
+    setIsSelectionMode(false);
+    setSelectedItems(new Set());
+  };
+
+  const handlePass = useCallback(() => {
     Alert.alert(
-      "Delete History",
-      `Are you sure you want to delete ${selectedItems.size} item${
-        selectedItems.size > 1 ? "s" : ""
-      } from your try-on history?`,
+      "Remove from Considering",
+      `Remove ${selectedItems.size} item${selectedItems.size > 1 ? "s" : ""} from your wishlist?`,
       [
+        { text: "Cancel", style: "cancel" },
         {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
+          text: "Remove",
           style: "destructive",
           onPress: async () => {
             try {
               await deleteHistoryItems(selectedItems);
-              setIsSelectionMode(false);
-              setSelectedItems(new Set());
-            } catch (error) {
-              Alert.alert("Error", "Failed to delete items. Please try again.");
+              exitSelection();
+            } catch {
+              Alert.alert("Error", "Failed to remove items. Please try again.");
             }
           },
         },
       ]
     );
   }, [selectedItems, deleteHistoryItems]);
+
+  const handleBoughtIt = useCallback(() => {
+    if (!clothingContext) {
+      Alert.alert("Error", "Closet isn't loaded yet — try again in a moment.");
+      return;
+    }
+    const ids = Array.from(selectedItems);
+    const itemsToPromote = recentTryOns.filter((t) => selectedItems.has(t.id));
+    Alert.alert(
+      "I bought it",
+      `Move ${ids.length} item${ids.length > 1 ? "s" : ""} into your closet?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Add to closet",
+          onPress: async () => {
+            try {
+              const withImage = itemsToPromote.filter(
+                (it): it is typeof it & { newClothingImageUri: string } => !!it.newClothingImageUri
+              );
+              await Promise.all(
+                withImage.map((it) => clothingContext.addClothingItemFromImage(it.newClothingImageUri))
+              );
+              await deleteHistoryItems(selectedItems);
+              exitSelection();
+              Alert.alert("Added", `Added ${withImage.length} item${withImage.length === 1 ? "" : "s"} to your closet.`);
+            } catch (error) {
+              console.error("Bought-it promotion failed:", error);
+              Alert.alert("Error", "Couldn't add to closet. Please try again.");
+            }
+          },
+        },
+      ]
+    );
+  }, [selectedItems, recentTryOns, clothingContext, deleteHistoryItems]);
 
   const safeAreaEdges: Edge[] = ["top", "left", "right"];
 
@@ -224,13 +284,15 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
         <DeleteModeHeader selectedCount={selectedItems.size} onCancel={handleCancelSelection} />
       ) : (
         <View style={styles.header}>
-          <Text style={styles.title}>Virtual Try-On</Text>
+          <Text style={styles.title}>Fitting Room</Text>
         </View>
       )}
 
       <ScrollView style={[styles.content, isSelectionMode && styles.contentWithDelete]}>
         {/* Instructions */}
-        <Text style={styles.instructions}>Select an outfit and upload your photo to see how it looks on you</Text>
+        <Text style={styles.instructions}>
+          Try clothes on before you buy. Drop in a clothing photo from any store, then your photo — see the fit.
+        </Text>
 
         {/* Photo Tips Section */}
         <PhotoTipsSection />
@@ -238,7 +300,7 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
         {/* Content Selection Area */}
         <View style={styles.selectionContainer}>
           <ContentSelectionBox
-            title="Choose Outfit"
+            title="Clothing image"
             iconName="checkroom"
             onPress={() => setOptionSheetVisible(true)}
             selectedImageUri={selectedOutfitUri}
@@ -248,12 +310,13 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
             }}
           />
           <ContentSelectionBox
-            title="Add Your Picture"
+            title="Your photo"
             iconName="add-a-photo"
             onPress={handlePhotoSelect}
             selectedImageUri={selectedPhotoUri}
             onClear={() => {
               setSelectedPhotoUri(undefined);
+              setUserPhotoUri(null);
               setResultImageUri(undefined);
             }}
           />
@@ -270,7 +333,7 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
               onPress={handleTryOn}
               disabled={!selectedOutfitUri || !selectedPhotoUri}
             >
-              <Text style={styles.tryOnButtonText}>Try It On!</Text>
+              <Text style={styles.tryOnButtonText}>Try it on</Text>
             </PressableFade>
           )
         )}
@@ -278,7 +341,7 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
         {/* Result Display */}
         {resultImageUri && (
           <View style={styles.resultContainer}>
-            <Text style={styles.subtitle}>Here's how it looks on you!</Text>
+            <Text style={styles.subtitle}>Here's the fit</Text>
             <Image source={{ uri: resultImageUri }} style={styles.resultImage} resizeMode="contain" />
             <PressableFade
               containerStyle={styles.regenerateButtonContainer}
@@ -288,7 +351,7 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
                 handleTryOn();
               }}
             >
-              <Text style={styles.regenerateButtonText}>Re-generate</Text>
+              <Text style={styles.regenerateButtonText}>Try again</Text>
             </PressableFade>
           </View>
         )}
@@ -305,8 +368,25 @@ const VirtualTryOnScreen = ({ navigation }: Props) => {
         )}
       </ScrollView>
 
-      {/* Delete Button */}
-      {isSelectionMode && <DeleteButton onDelete={handleDelete} selectedCount={selectedItems.size} />}
+      {/* Wishlist action bar */}
+      {isSelectionMode && (
+        <View style={styles.actionBar}>
+          <PressableFade
+            containerStyle={styles.actionBtnContainer}
+            style={[styles.actionBtn, styles.actionBtnPrimary]}
+            onPress={handleBoughtIt}
+          >
+            <Text style={styles.actionBtnPrimaryText}>I bought it</Text>
+          </PressableFade>
+          <PressableFade
+            containerStyle={styles.actionBtnContainer}
+            style={[styles.actionBtn, styles.actionBtnSecondary]}
+            onPress={handlePass}
+          >
+            <Text style={styles.actionBtnSecondaryText}>Pass</Text>
+          </PressableFade>
+        </View>
+      )}
 
       <TryOnOptionSheet
         isVisible={isOptionSheetVisible}
@@ -395,7 +475,45 @@ const styles = StyleSheet.create({
     color: colors.text_primary,
   },
   contentWithDelete: {
-    paddingBottom: 80,
+    paddingBottom: 96,
+  },
+  actionBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: "row",
+    padding: 12,
+    gap: 10,
+    backgroundColor: colors.surface_base,
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
+  },
+  actionBtnContainer: {
+    flex: 1,
+  },
+  actionBtn: {
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  actionBtnPrimary: {
+    backgroundColor: colors.accent_primary,
+  },
+  actionBtnPrimaryText: {
+    fontFamily: typography.semiBold,
+    fontSize: 15,
+    color: colors.text_inverse,
+  },
+  actionBtnSecondary: {
+    backgroundColor: colors.surface_raised,
+    borderWidth: 1,
+    borderColor: colors.border_subtle,
+  },
+  actionBtnSecondaryText: {
+    fontFamily: typography.semiBold,
+    fontSize: 15,
+    color: colors.text_primary,
   },
 });
 

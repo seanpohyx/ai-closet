@@ -312,9 +312,6 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
             />
           </View>
 
-          {/* Relevant Outfits Section */}
-          <RelevantOutfits clothingItemId={id} onOutfitPress={handleOutfitPress} />
-
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Item Details</Text>
 
@@ -439,6 +436,9 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
               </Pressable>
             </View>
           )}
+
+          {/* Outfits this item appears in — at the bottom so it never pushes the form down */}
+          <RelevantOutfits clothingItemId={id} onOutfitPress={handleOutfitPress} />
         </ScrollView>
       </KeyboardAvoidingView>
 

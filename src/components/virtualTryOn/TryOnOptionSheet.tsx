@@ -15,22 +15,22 @@ type TryOnOption = {
 
 const tryOnOptions: TryOnOption[] = [
   {
+    id: "discover",
+    title: "New photo from your gallery",
+    description: "Try something you don't own yet — paste a product shot",
+    icon: "photo-library",
+  },
+  {
     id: "single",
-    title: "From My Closet",
-    description: "Pick a single item you've already added.",
+    title: "From my closet",
+    description: "Pick a piece you already saved",
     icon: "checkroom",
   },
   {
     id: "outfit",
-    title: "Saved Outfit",
-    description: "Try on a full outfit from the Outfits tab.",
+    title: "From a saved outfit",
+    description: "Use a full outfit you've built",
     icon: "style",
-  },
-  {
-    id: "discover",
-    title: "New Photo",
-    description: "Upload from your gallery or a product shot.",
-    icon: "photo-library",
   },
 ];
 
@@ -47,7 +47,7 @@ const TryOnOptionSheet = ({ isVisible, onClose, onSelect }: Props) => {
     <Pressable style={styles.overlay} onPress={onClose}>
       <View style={styles.sheet}>
         <View style={styles.header}>
-          <Text style={styles.title}>Choose what to try on</Text>
+          <Text style={styles.title}>What to try on</Text>
           <PressableFade onPress={onClose} style={styles.closeButton}>
             <MaterialIcons name="close" size={24} color={colors.icon_stroke} />
           </PressableFade>

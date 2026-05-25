@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -15,6 +15,8 @@ import SelectOutfitScreen from "../screens/SelectOutfitScreen";
 import CarouselScreen from "../screens/CarouselScreen";
 import CarouselSetupScreen from "../screens/CarouselSetupScreen";
 import AlignToSilhouetteScreen from "../screens/AlignToSilhouetteScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+import { SettingsContext } from "../contexts/SettingsContext";
 import { colors } from "../styles/colors";
 import { typography } from "../styles/globalStyles";
 import {
@@ -63,49 +65,58 @@ const CarouselStackNavigator = () => (
 );
 
 // Main Tab Navigator
-const MainTabNavigator = () => (
-  <Tab.Navigator
-    screenOptions={{
-      headerShown: false,
-      tabBarStyle: styles.tabBar,
-      tabBarActiveTintColor: colors.text_primary,
-      tabBarInactiveTintColor: colors.text_gray,
-      tabBarLabelStyle: styles.tabBarLabel,
-      tabBarIconStyle: styles.tabBarIcon,
-    }}
-  >
-    <Tab.Screen
-      name="Closet"
-      component={ClosetStackNavigator}
-      options={{
-        tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="wardrobe" size={size} color={color} />,
+const MainTabNavigator = () => {
+  const settings = useContext(SettingsContext);
+  // Until settings hydrate, mirror the persisted default (off) so the tab
+  // doesn't flash on then off on first launch.
+  const fittingRoomVisible = settings?.isHydrated ? settings.showFittingRoom : false;
+
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: styles.tabBar,
+        tabBarActiveTintColor: colors.text_primary,
+        tabBarInactiveTintColor: colors.text_gray,
+        tabBarLabelStyle: styles.tabBarLabel,
+        tabBarIconStyle: styles.tabBarIcon,
       }}
-    />
-    <Tab.Screen
-      name="Outfits"
-      component={OutfitStackNavigator}
-      options={{
-        tabBarIcon: ({ color, size }) => <MaterialIcons name="style" size={size} color={color} />,
-      }}
-    />
-    <Tab.Screen
-      name="TryOn"
-      component={TryOnStackNavigator}
-      options={{
-        tabBarLabel: "AI Mirror",
-        tabBarIcon: ({ color, size }) => <FontAwesome6 name="wand-magic-sparkles" size={20} color={color} />,
-      }}
-    />
-    <Tab.Screen
-      name="Carousel"
-      component={CarouselStackNavigator}
-      options={{
-        tabBarLabel: "Mix & Match",
-        tabBarIcon: ({ color, size }) => <MaterialIcons name="view-carousel" size={size} color={color} />,
-      }}
-    />
-  </Tab.Navigator>
-);
+    >
+      <Tab.Screen
+        name="Closet"
+        component={ClosetStackNavigator}
+        options={{
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="wardrobe" size={size} color={color} />,
+        }}
+      />
+      <Tab.Screen
+        name="Outfits"
+        component={OutfitStackNavigator}
+        options={{
+          tabBarIcon: ({ color, size }) => <MaterialIcons name="style" size={size} color={color} />,
+        }}
+      />
+      {fittingRoomVisible && (
+        <Tab.Screen
+          name="TryOn"
+          component={TryOnStackNavigator}
+          options={{
+            tabBarLabel: "Fitting Room",
+            tabBarIcon: ({ color, size }) => <FontAwesome6 name="wand-magic-sparkles" size={20} color={color} />,
+          }}
+        />
+      )}
+      <Tab.Screen
+        name="Carousel"
+        component={CarouselStackNavigator}
+        options={{
+          tabBarLabel: "Mix & Match",
+          tabBarIcon: ({ color, size }) => <MaterialIcons name="view-carousel" size={size} color={color} />,
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
 
 // Root Navigator
 const AppNavigator = () => {
@@ -119,6 +130,7 @@ const AppNavigator = () => {
           <RootStack.Screen name="SelectClothingModal" component={SelectClothingScreen} />
           <RootStack.Screen name="SelectOutfitModal" component={SelectOutfitScreen} />
           <RootStack.Screen name="AlignToSilhouetteModal" component={AlignToSilhouetteScreen} />
+          <RootStack.Screen name="SettingsModal" component={SettingsScreen} />
         </RootStack.Group>
       </RootStack.Navigator>
     </NavigationContainer>

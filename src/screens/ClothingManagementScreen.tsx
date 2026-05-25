@@ -36,8 +36,18 @@ interface CategoryTabProps {
 // CategoryTab Subcomponent
 const CategoryTab = ({ name, isSelected, onPress, count }: CategoryTabProps) => (
   <Pressable style={[styles.categoryTab, isSelected && styles.categoryTabSelected]} onPress={onPress}>
-    <Text style={[styles.categoryTabText, isSelected && styles.categoryTabTextSelected]}>{name}</Text>
-    <Text style={[styles.categoryCount, isSelected && styles.categoryCountSelected]}>{count}</Text>
+    <Text
+      style={[styles.categoryTabText, isSelected && styles.categoryTabTextSelected]}
+      numberOfLines={1}
+    >
+      {name}
+    </Text>
+    <Text
+      style={[styles.categoryCount, isSelected && styles.categoryCountSelected]}
+      numberOfLines={1}
+    >
+      {count}
+    </Text>
   </Pressable>
 );
 
@@ -151,6 +161,7 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
       quality: 1,
     });
     if (!result.canceled) {
@@ -164,7 +175,7 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
       Alert.alert("Permission Required", "Permission to access camera is required!");
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({ quality: 1 });
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 1 });
     if (!result.canceled) {
       handleAddClothingItem(result.assets[0].uri);
     }
@@ -233,20 +244,29 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
       ) : (
         <View style={styles.header}>
           <Text style={styles.title}>My Closet</Text>
-          <Pressable onPress={() => setFilterSheetVisible(true)} style={styles.filterBtn} hitSlop={8}>
-            <MaterialIcons name="tune" size={22} color={colors.icon_stroke} />
-            {(() => {
-              const count = countActiveFilters({
-                colors: activeFilters.colors || [],
-                printsOnly: !!activeFilters.printsOnly,
-              });
-              return count > 0 ? (
-                <View style={styles.filterBadge}>
-                  <Text style={styles.filterBadgeText}>{count}</Text>
-                </View>
-              ) : null;
-            })()}
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={() => navigation.navigate("SettingsModal")}
+              style={styles.headerIconBtn}
+              hitSlop={8}
+            >
+              <MaterialIcons name="settings" size={22} color={colors.icon_stroke} />
+            </Pressable>
+            <Pressable onPress={() => setFilterSheetVisible(true)} style={styles.headerIconBtn} hitSlop={8}>
+              <MaterialIcons name="tune" size={22} color={colors.icon_stroke} />
+              {(() => {
+                const count = countActiveFilters({
+                  colors: activeFilters.colors || [],
+                  printsOnly: !!activeFilters.printsOnly,
+                });
+                return count > 0 ? (
+                  <View style={styles.filterBadge}>
+                    <Text style={styles.filterBadgeText}>{count}</Text>
+                  </View>
+                ) : null;
+              })()}
+            </Pressable>
+          </View>
         </View>
       )}
 
@@ -348,7 +368,11 @@ const styles = StyleSheet.create({
     fontFamily: typography.bold,
     color: colors.text_primary,
   },
-  filterBtn: {
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerIconBtn: {
     width: 40,
     height: 40,
     justifyContent: "center",
@@ -372,19 +396,23 @@ const styles = StyleSheet.create({
     color: colors.text_inverse,
   },
   categoryTabsContainer: {
-    maxHeight: 48,
+    flexGrow: 0,
   },
   categoryTabsContent: {
     paddingHorizontal: 16,
+    paddingVertical: 8,
+    alignItems: "center",
   },
   categoryTab: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     marginRight: 8,
-    borderRadius: 20,
+    borderRadius: 14,
     backgroundColor: colors.thumbnail_background,
+    flexShrink: 0,
+    minHeight: 36,
   },
   categoryTabSelected: {
     backgroundColor: colors.primary_yellow,
@@ -392,6 +420,7 @@ const styles = StyleSheet.create({
   categoryTabText: {
     fontFamily: typography.medium,
     fontSize: 14,
+    lineHeight: 18,
     color: colors.text_gray,
     marginRight: 4,
   },
@@ -401,6 +430,7 @@ const styles = StyleSheet.create({
   categoryCount: {
     fontFamily: typography.regular,
     fontSize: 12,
+    lineHeight: 16,
     color: colors.text_gray,
   },
   categoryCountSelected: {

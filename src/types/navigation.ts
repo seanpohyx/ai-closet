@@ -9,6 +9,7 @@ export type RootStackParamList = {
   SelectClothingModal: { onSelect: (uri: string) => void };
   SelectOutfitModal: { onSelect: (uri: string) => void };
   AlignToSilhouetteModal: { mode: "userPhoto" | "garment"; clothingItemId?: string };
+  SettingsModal: undefined;
 };
 
 export type MainTabParamList = {

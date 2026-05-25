@@ -5,11 +5,10 @@ import { colors } from "../../styles/colors";
 import { typography } from "../../styles/globalStyles";
 import PressableFade from "../common/PressableFade";
 
-// TODO: Revise photo tips
 const tips = [
-  "Ensure good lighting conditions",
-  "Wear form-fitting clothes",
-  "You should be the only person in the photo",
+  "Clear lighting, plain background",
+  "Form-fitting clothes show the fit best",
+  "Just you in the photo — no other people",
 ];
 
 const PhotoTipsSection = () => {

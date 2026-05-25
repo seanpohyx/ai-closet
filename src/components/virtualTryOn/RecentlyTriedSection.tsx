@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "../../styles/colors";
@@ -14,47 +14,70 @@ type Props = {
   selectedItems?: Set<string>;
 };
 
+type TriedThumbnailProps = {
+  item: VirtualTryOnItem;
+  onPress: () => void;
+  onLongPress?: () => void;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
+};
+
+const TriedThumbnail = ({ item, onPress, onLongPress, isSelectionMode, isSelected }: TriedThumbnailProps) => {
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  return (
+    <PressableFade style={styles.itemContainer} onPress={onPress} onLongPress={onLongPress}>
+      <View style={[styles.imageWrapper, isSelectionMode && isSelected && styles.imageWrapperSelected]}>
+        {loadFailed ? (
+          <View style={styles.fallback}>
+            <MaterialIcons name="broken-image" size={28} color={colors.text_tertiary} />
+            <Text style={styles.fallbackText}>Image unavailable</Text>
+          </View>
+        ) : (
+          <Image
+            source={{ uri: item.resultImageUri }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={() => setLoadFailed(true)}
+          />
+        )}
+        <View style={styles.tryOnTypeTag}>
+          <MaterialIcons
+            name={item.tryOnType === "discover" ? "photo-library" : "checkroom"}
+            size={12}
+            color={colors.text_primary}
+          />
+          <Text style={styles.tryOnTypeText}>{item.tryOnType === "discover" ? "Discover" : "Closet Item"}</Text>
+        </View>
+        {isSelectionMode && (
+          <View style={styles.checkboxContainer}>
+            <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+              {isSelected && <MaterialIcons name="check" size={16} color={colors.screen_background} />}
+            </View>
+          </View>
+        )}
+      </View>
+      <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+    </PressableFade>
+  );
+};
+
 const RecentlyTriedSection = ({ items, onItemPress, onItemLongPress, isSelectionMode, selectedItems }: Props) => {
   if (items.length === 0) return null;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Recently Tried</Text>
+      <Text style={styles.title}>Considering</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {items.map((item) => (
-          <PressableFade
+          <TriedThumbnail
             key={item.id}
-            style={styles.itemContainer}
+            item={item}
             onPress={() => onItemPress(item)}
-            onLongPress={() => onItemLongPress?.(item)}
-          >
-            <View
-              style={[
-                styles.imageWrapper,
-                isSelectionMode && selectedItems?.has(item.id) && styles.imageWrapperSelected,
-              ]}
-            >
-              <Image source={{ uri: item.resultImageUri }} style={styles.image} resizeMode="cover" />
-              <View style={styles.tryOnTypeTag}>
-                <MaterialIcons
-                  name={item.tryOnType === "discover" ? "photo-library" : "checkroom"}
-                  size={12}
-                  color={colors.text_primary}
-                />
-                <Text style={styles.tryOnTypeText}>{item.tryOnType === "discover" ? "Discover" : "Closet Item"}</Text>
-              </View>
-              {isSelectionMode && (
-                <View style={styles.checkboxContainer}>
-                  <View style={[styles.checkbox, selectedItems?.has(item.id) && styles.checkboxSelected]}>
-                    {selectedItems?.has(item.id) && (
-                      <MaterialIcons name="check" size={16} color={colors.screen_background} />
-                    )}
-                  </View>
-                </View>
-              )}
-            </View>
-            <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
-          </PressableFade>
+            onLongPress={onItemLongPress ? () => onItemLongPress(item) : undefined}
+            isSelectionMode={isSelectionMode}
+            isSelected={selectedItems?.has(item.id)}
+          />
         ))}
       </ScrollView>
     </View>
@@ -92,6 +115,17 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+  },
+  fallback: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  fallbackText: {
+    fontFamily: typography.regular,
+    fontSize: 11,
+    color: colors.text_tertiary,
   },
   tryOnTypeTag: {
     position: "absolute",

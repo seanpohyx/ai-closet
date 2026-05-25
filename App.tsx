@@ -11,6 +11,7 @@ import { ClothingProvider } from "./src/contexts/ClothingContext";
 import { VirtualTryOnProvider } from "./src/contexts/VirtualTryOnContext";
 import { OutfitProvider } from "./src/contexts/OutfitContext";
 import { CarouselProvider } from "./src/contexts/CarouselContext";
+import { SettingsProvider } from "./src/contexts/SettingsContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
 
@@ -32,7 +33,9 @@ export default function App() {
         <OutfitProvider>
           <VirtualTryOnProvider>
             <CarouselProvider>
-              <AppNavigator />
+              <SettingsProvider>
+                <AppNavigator />
+              </SettingsProvider>
             </CarouselProvider>
           </VirtualTryOnProvider>
         </OutfitProvider>

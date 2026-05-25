@@ -14,8 +14,9 @@ const RelevantOutfits = ({ clothingItemId, onOutfitPress }: Props) => {
   const outfitContext = useContext(OutfitContext);
   const { width } = useWindowDimensions();
 
-  // Calculate thumbnail dimensions
-  const thumbnailWidth = (width - 32 - 16) / 2.5; // allowing 2.5 items to be visible
+  // Compact 3-per-screen cards so the section stays a constant vertical
+  // footprint regardless of how many outfits reference this item.
+  const thumbnailWidth = (width - 32 - 16) / 3;
   const thumbnailHeight = (thumbnailWidth * 4) / 3; // 3:4 aspect ratio
 
   const relevantOutfits = useMemo(() => {
@@ -27,7 +28,7 @@ const RelevantOutfits = ({ clothingItemId, onOutfitPress }: Props) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Relevant Outfits</Text>
+      <Text style={styles.sectionTitle}>In {relevantOutfits.length} outfit{relevantOutfits.length === 1 ? "" : "s"}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {relevantOutfits.map((outfit) => (
           <View key={outfit.id} style={styles.thumbnailContainer}>
@@ -46,14 +47,15 @@ const RelevantOutfits = ({ clothingItemId, onOutfitPress }: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontFamily: typography.bold,
-    color: colors.text_primary,
+    fontSize: 15,
+    fontFamily: typography.semiBold,
+    color: colors.text_secondary,
     paddingHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   scrollContent: {
     paddingHorizontal: 16,
