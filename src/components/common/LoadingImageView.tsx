@@ -23,12 +23,14 @@ const LoadingImageView = ({ imageUri, processedImageUri, isLoading = false, load
       {isLoading && (
         <Animated.View entering={FadeIn} style={StyleSheet.absoluteFill}>
           <BlurView intensity={60} style={styles.blurContainer}>
-            <ActivityIndicator size="large" color={colors.primary_yellow} />
-            {loadingText && (
-              <Animated.Text entering={FadeIn.delay(300)} style={styles.loadingText}>
-                {loadingText}
-              </Animated.Text>
-            )}
+            <View style={styles.pill}>
+              <ActivityIndicator size="small" color={colors.text_inverse} />
+              {loadingText && (
+                <Animated.Text entering={FadeIn.delay(300)} style={styles.pillText}>
+                  {loadingText}
+                </Animated.Text>
+              )}
+            </View>
           </BlurView>
         </Animated.View>
       )}
@@ -52,12 +54,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(24, 24, 27, 0.88)",
+    gap: 10,
+  },
+  pillText: {
     fontFamily: typography.medium,
-    color: colors.text_gray,
-    textAlign: "center",
+    fontSize: 14,
+    color: colors.text_inverse,
+    letterSpacing: 0.2,
   },
 });
 

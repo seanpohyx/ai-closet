@@ -171,31 +171,30 @@ const ClothingDetailScreen = ({ route, navigation }: Props) => {
     return undefined;
   };
 
-  // Update local state when context item changes (e.g., when processing completes)
+  // Sync local form state with the context. Be careful not to clobber the
+  // user's in-progress edits when the context updates from a side-channel
+  // (e.g., AlignToSilhouetteModal saving carouselTransform, or background
+  // removal completing in the provider).
   useEffect(() => {
-    if (contextItem && localItem) {
-      const prevStatus = localItem.processingStatus;
-      const newStatus = contextItem.processingStatus;
-
-      // Check if categorization just completed
-      if (prevStatus.categorization !== "completed" && newStatus.categorization === "completed") {
-        // Update local state with new categorization data
-        setLocalItem(contextItem);
-        setIsDirty(false);
-      }
-
-      // Update local item if background removal completed
-      if (prevStatus.backgroundRemoval !== "completed" && newStatus.backgroundRemoval === "completed") {
-        setLocalItem(contextItem);
-      }
-    }
-  }, [contextItem]);
-
-  useEffect(() => {
-    if (contextItem) {
-      setLocalItem(contextItem);
-    }
-  }, [contextItem]);
+    if (!contextItem) return;
+    setLocalItem((prev) => {
+      // Initial hydration — adopt the context item wholesale.
+      if (!prev) return contextItem;
+      // Form is clean — context is the source of truth.
+      if (!isDirty) return contextItem;
+      // Form is dirty — keep user's unsaved edits, but pull in side-channel
+      // fields the user can't edit from this screen so the UI stays in sync
+      // with reality (the new silhouette transform, the freshly-removed
+      // background image, processing status).
+      return {
+        ...prev,
+        carouselTransform: contextItem.carouselTransform,
+        backgroundRemovedImageUri: contextItem.backgroundRemovedImageUri,
+        processingStatus: contextItem.processingStatus,
+        processingError: contextItem.processingError,
+      };
+    });
+  }, [contextItem, isDirty]);
 
   // Auto-launch alignment after BG removal completes for newly added items.
   useEffect(() => {

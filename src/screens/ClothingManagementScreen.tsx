@@ -163,7 +163,6 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
       quality: 1,
     });
     if (!result.canceled) {
@@ -177,7 +176,7 @@ const ClothingManagementScreen = ({ navigation }: Props) => {
       Alert.alert("Permission Required", "Permission to access camera is required!");
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 1 });
+    const result = await ImagePicker.launchCameraAsync({ quality: 1 });
     if (!result.canceled) {
       handleAddClothingItem(result.assets[0].uri);
     }
